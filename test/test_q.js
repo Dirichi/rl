@@ -4,17 +4,18 @@ var Q = require("../lib/q");
 describe('Q', function () {
   describe('constructor', function () {
     it('creates a table for each instance of Q', function () {
-      testQ = new Q(['a','b','c'],[1,2,3]);
+      testQ = new Q(['a','b','c'],[1,2]);
 
-      expect(testQ.table.body).to.eql([[0, 0, 0],[0, 0, 0],[0, 0, 0]]);
+      expect(testQ.table.body.length).to.eql(3);
+      expect(testQ.table.body[0].length).to.eql(2);
     })
   });
 
   describe('get', function () {
     it('returns the value at the provided state and action pair', function () {
       testQ = new Q(['a', 'b'],[1, 2]);
-
-      expect(testQ.get('a', 2)).to.equal(0);
+      //can't seed so this is an imperfect test
+      expect(testQ.get('a', 2)).to.be.a('number');
     });
 
     it('throws an error if the provided state does not exist', function () {
@@ -65,4 +66,23 @@ describe('Q', function () {
       expect(testQ.argMax.bind(testQ, 'b')).to.throw('Q instance does not have provided state b');
     })
   });
+
+  describe('toHash', function () {
+    it('returns its table as a hash', function () {
+      testQ = new Q(['a', 'b'], [1,2]);
+      testQ.table.setBody([[5,7],[6,3]]);
+      expect(testQ.toHash()).to.eql({ a: { 1: 5, 2: 7 }, b: { 1: 6, 2: 3 } })
+    })
+  });
+
+  describe('fromHash', function () {
+    it('returns a Q instance with a table corresponding to the provided hash', function () {
+      testQ = Q.fromHash({ a: { 1: 5.00, 2: 7.00 }, b: { 1: 6.00, 2: 3.00 } });
+
+      expect(testQ.states).to.eql(['a', 'b'])
+      expect(testQ.actions).to.eql(['1', '2']);
+      expect(testQ.table.body).to.eql([[5,7],[6,3]]);
+
+    })
+  })
 })
