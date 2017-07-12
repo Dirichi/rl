@@ -43,7 +43,7 @@ describe('Learner', function () {
       sinon.stub(Learner.prototype, 'getCurrentState').returns('a');
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
       testQ.set('b', 1, 10);
-      testQ.set('a', 2, 1)
+      testQ.set('a', 2, 1);
 
       expect(testLearner.modifiedBellman('a', 'b', 2, 10)).to.equal(4.6)
       Learner.prototype.getCurrentState.restore();
