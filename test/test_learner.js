@@ -1,8 +1,8 @@
 var chai = require("chai");
 var expect = chai.expect;
 var sinon = require('sinon')
-var Learner = require('../lib/learner');
-var Q = require("../lib/q");
+var Learner = require('../public/lib/q/learner');
+var Q = require("../public/lib/q/q");
 
 describe('Learner', function () {
   describe('constructor', function () {

@@ -2,7 +2,7 @@ var has_require = typeof require !== 'undefined'
 
 if( typeof Matrix === 'undefined' ) {
   if( has_require ) {
-    Matrix = require('../lib/matrix')
+    Matrix = require('../q/matrix')
   }
   else throw new Error('q requires matrix');
 }

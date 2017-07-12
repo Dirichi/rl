@@ -1,21 +1,21 @@
 var expect = require("chai").expect;
-var Q = require("../lib/q");
+var Q = require("../public/lib/q/q");
 
 describe('Q', function () {
   describe('constructor', function () {
     it('creates a table for each instance of Q', function () {
-      testQ = new Q(['a','b','c'],[1,2]);
+      testQ = new Q(['a','b'],[1,2,3]);
 
-      expect(testQ.table.body.length).to.eql(3);
-      expect(testQ.table.body[0].length).to.eql(2);
+      expect(testQ.table.numRows).to.eql(2);
+      expect(testQ.table.numColumns).to.eql(3);
     })
   });
 
   describe('get', function () {
     it('returns the value at the provided state and action pair', function () {
       testQ = new Q(['a', 'b'],[1, 2]);
-      //can't seed so this is an imperfect test
-      expect(testQ.get('a', 2)).to.be.a('number');
+
+      expect(testQ.get('a', 2)).to.equal(testQ.table.body[0][1]);
     });
 
     it('throws an error if the provided state does not exist', function () {
