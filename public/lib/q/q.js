@@ -168,7 +168,7 @@ class Q {
     var that = this;
     row.forEach(function(value, index){
       var action = that.actions[index];
-      hash[action] = value.toFixed(2);
+      hash[action] = parseFloat(value.toFixed(2));
     })
     return hash;
   }
