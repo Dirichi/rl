@@ -24,7 +24,7 @@ app.set("views", __dirname + '/views');
 app.engine('.html', require('ejs').__express);
 app.set('view engine', 'html');
 //Add connection to the lib folder for css & js files
-app.use(express.static(__dirname + '/lib'));
+app.use(express.static(__dirname + '/public'));
 
 app.use(bodyParser.json());
 

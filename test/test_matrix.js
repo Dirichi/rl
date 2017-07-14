@@ -1,12 +1,12 @@
 var expect = require("chai").expect;
-var Matrix = require("../lib/matrix");
+var Matrix = require("../public/lib/q/matrix");
 
 describe('Matrix', function () {
   describe('constructor', function () {
-    it('sets the body to of the Matrix instance to zeroes', function () {
+    it('sets the body of the Matrix on creation', function () {
       var testMatrix = new Matrix(2, 2)
 
-      expect(testMatrix.body).to.eql([[0, 0], [0, 0]]);
+      expect(testMatrix.body).to.be.an('array').that.is.not.empty;
     })
   })
 
@@ -44,7 +44,7 @@ describe('Matrix', function () {
     it('returns the value at the provided index', function () {
       var testMatrix = new Matrix(2, 2);
 
-      expect((testMatrix.get(0, 0))).to.equal(0);
+      expect((testMatrix.get(0, 0))).to.equal(testMatrix.body[0][0]);
     });
 
     it('throws an error if the provided index is out of range of the matrix', function () {
