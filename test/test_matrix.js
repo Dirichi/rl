@@ -18,6 +18,49 @@ describe('Matrix', function () {
     })
   });
 
+  describe('product', function () {
+    it('returns a product of two matrices', function (){
+      var matrixA = new Matrix(2, 2)
+      matrixA.setBody([[1, 2],[3, 4]])
+      var matrixB = new Matrix(2,2)
+      matrixB.setBody([[3, 1],[1, 2]])
+
+      var product = Matrix.product(matrixA, matrixB);
+
+      expect(product.body).to.eql([[5, 5], [13, 11]]);
+    })
+  });
+
+  describe('row', function () {
+    it('returns the row at the specified index', function (){
+      var matrix = new Matrix(2,2)
+      matrix.setBody([[1, 2],[3, 4]])
+
+      var row = matrix.row(0);
+
+      expect(row).to.eql([1, 2]);
+    })
+  });
+
+  describe('column', function () {
+    it('returns the column at the specified index', function (){
+      var matrix = new Matrix(2,2)
+      matrix.setBody([[1, 2],[3, 4]])
+
+      var column = matrix.column(0);
+
+      expect(column).to.eql([1, 3]);
+    })
+  });
+
+  describe('dotProduct', function () {
+    it('returns the column at the specified index', function (){
+      dotProduct = Matrix.dotProduct([1, 2],[3, 4])
+
+      expect(dotProduct).to.eql(11);
+    })
+  });
+
   describe('setBody', function () {
     it('sets the content of the matrix with provided data', function () {
       var testMatrix = new Matrix(2,2);
