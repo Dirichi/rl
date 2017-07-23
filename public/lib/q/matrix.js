@@ -55,8 +55,7 @@ class Matrix{
 
 
   static checkCompatibilityForProduct(matrix, otherMatrix){
-    var compatible = matrix.numRows == otherMatrix.numColumns
-    && matrix.numColumns == otherMatrix.numRows
+    var compatible = matrix.numColumns == otherMatrix.numRows
     if (!compatible) {
       throw new Error('Matrices not compatible for multiplication')
     }
