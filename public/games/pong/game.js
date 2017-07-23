@@ -43,14 +43,26 @@ function setup() {
 }
 
 function draw(){
+  animateGame();
+  manageScores();
+  restartWhenBallOutOfBounds();
+  manageLearning();
+}
+
+function animateGame() {
   background(0);
   paddleA.animate();
   paddleAI.animate();
   ball.animate();
   paddleA.track(ball);
+}
+
+function manageScores() {
   updateScoresOnBallOutOfXBounds();
   animateScores();
-  restartWhenBallOutOfBounds();
+}
+
+function manageLearning() {
   administerRewards();
   brain.learn();
   resetRewards();
