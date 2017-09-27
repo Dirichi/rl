@@ -7,7 +7,13 @@ describe('Matrix', function () {
       var testMatrix = new Matrix(2, 2)
 
       expect(testMatrix.body).to.be.an('array').that.is.not.empty;
-    })
+    });
+
+    it('sets the body of the matrix to a provided body', function () {
+      var testMatrix = new Matrix(2, 2, [[1,1], [1,1]]);
+
+      expect(testMatrix.body).to.eql([[1,1],[1,1]]);
+    });
   })
 
   describe('zeroes', function () {

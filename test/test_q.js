@@ -1,9 +1,18 @@
 var expect = require("chai").expect;
 var Q = require("../public/lib/q/q");
+var Matrix = require("../public/lib/q/matrix");
+
 
 describe('Q', function () {
   describe('constructor', function () {
     it('creates a table for each instance of Q', function () {
+      var testMatrix = new Matrix(2, 2, [[1,1],[1,1]]);
+      testQ = new Q(['a','b'],[1,2,3], testMatrix);
+
+      expect(testQ.table.body).to.eql([[1,1],[1,1]]);
+    })
+
+    it('creates a random table if no table is provided', function () {
       testQ = new Q(['a','b'],[1,2,3]);
 
       expect(testQ.table.numRows).to.eql(2);

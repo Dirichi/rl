@@ -9,10 +9,16 @@ if( typeof Matrix === 'undefined' ) {
 
 
 class QRegression {
-  constructor(numFeatures, actions) {
+  constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures)) {
     this.numFeatures = numFeatures
     this.actions = actions;
-    this.weights = new Matrix(this.numFeatures, this.actions.length);
+    this.weights = weights; // add a set weights method
+    this.experience = [];
+    this.experienceSize = 100;
+  }
+
+  learn(){
+
   }
 
   get(features, action){

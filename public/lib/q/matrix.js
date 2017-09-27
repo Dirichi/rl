@@ -1,9 +1,9 @@
 class Matrix{
-  constructor(numRows, numColumns){
+  constructor(numRows, numColumns, body = Matrix.random(numRows, numColumns)){
     this.numRows = numRows;
     this.numColumns = numColumns;
     this.body = [];
-    this.setBody(Matrix.random(numRows, numColumns));
+    this.setBody(body);
   };
 
   static zeroes(numRows, numColumns){

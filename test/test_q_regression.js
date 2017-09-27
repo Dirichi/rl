@@ -1,13 +1,21 @@
 var expect = require("chai").expect;
 var QRegression = require("../public/lib/q/q_regression");
+var Matrix = require("../public/lib/q/matrix");
 
 describe('QRegression', function () {
   describe('constructor', function () {
-    it('creates a table for each instance of QRegression', function () {
+    it('assigns provided weights', function () {
+      var testMatrix = new Matrix(3, 2, [[0,1],[2,3],[4,5]]);
+      testQRegression = new QRegression(2,['left', 'right', 'up'], testMatrix);
+
+      expect(testQRegression.weights.body).to.eql([[0,1],[2,3],[4,5]]);;
+    })
+
+    it('creates random weights if no weights are provided', function () {
       testQRegression = new QRegression(2,['left', 'right', 'up']);
 
-      expect(testQRegression.weights.numRows).to.eql(2);
-      expect(testQRegression.weights.numColumns).to.eql(3);
+      expect(testQRegression.weights.numRows).to.eql(3);
+      expect(testQRegression.weights.numColumns).to.eql(2);
     })
   });
 

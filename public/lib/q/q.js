@@ -9,15 +9,10 @@ if( typeof Matrix === 'undefined' ) {
 
 
 class Q {
-  constructor(states, actions) {
+  constructor(states, actions, table = new Matrix(states.length, actions.length)) {
     this.states = states
     this.actions = actions
-    this.table = new Matrix(this.states.length, this.actions.length);
-    this.isPublishing = false;
-    this.messenger;
-    this.tablePublishCount = 0;
-    this.nextSetCountMark = 5000;
-    this.setCountInterval = 5000;
+    this.table = table; // replace with a set table method that checks if table matches dimensions
     this.setCount = 0;
   }
 
