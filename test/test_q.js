@@ -20,6 +20,19 @@ describe('Q', function () {
     })
   });
 
+  describe('learn', function () {
+    it('returns the value at the provided state and action pair', function () {
+      var testMatrix = new Matrix(2, 2, [[1,3],[1,3]]);
+      testQ = new Q(['a', 'b'],[1, 2], testMatrix);
+
+      testQ.learn('a', 1, 5, 'b', 0.2, 0.8)
+
+      //Q(s,a) = (Q(s,a) * (1 - alpha)) + (alpha * [r + gamma * Qprime(s,a)])
+      // = (1 * (1 - 0.2)) + (0.2 * (5 + (0.8 * 3)))
+      expect(testQ.table.body).to.eql([[2.28, 3],[1,3]])
+    });
+  });
+
   describe('get', function () {
     it('returns the value at the provided state and action pair', function () {
       testQ = new Q(['a', 'b'],[1, 2]);

@@ -106,7 +106,7 @@ class QRegression {
     // will be replaced and moved to Matrix when
     // we can cast arrays as matrices
 
-    return this.weights.numRows != features.length
+    return this.weights.numColumns != features.length
   }
 
   argMaxValueAndActionFor(features){

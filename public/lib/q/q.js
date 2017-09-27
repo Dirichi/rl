@@ -36,9 +36,16 @@ class Q {
     return q;
   }
 
-  setMessenger(messenger){
-    this.messenger = messenger
-  };
+  learn(oldState, action, reward, newState, alpha, gamma){
+    var Qsa = this.get(oldState, action)
+    var bestAction = this.argMax(newState)
+    var QPrimeSa = this.get(newState, bestAction)
+    var newQsa = (Qsa * (1 - alpha)) + alpha * (reward + gamma * QPrimeSa)
+
+    newQsa = Math.round(newQsa * Math.pow(10, 6)) / Math.pow(10, 6) // extract rounding into a common function
+
+    this.set(oldState, action, newQsa)
+  }
 
   get(state, action){
     this.preventInexistentStatesOrActions(state, action)
