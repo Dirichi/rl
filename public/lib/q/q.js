@@ -55,41 +55,6 @@ class Q {
   set(state, action, value){
     this.preventInexistentStatesOrActions(state, action);
     this.tableSet(state, action, value);
-    this.publishTableOnIntervalExceeded();
-    this.updateSetCount();
-  }
-
-  updateTablePublishCount(){
-    this.tablePublishCount += 1;
-  }
-
-  updateSetCount(){
-    this.setCount += 1;
-  }
-
-  publishTableOnIntervalExceeded(){
-    if (this.setCount >= this.nextSetCountMark) {
-      console.log('PUBLISSSSSSSSSH');
-      this.publishTable();
-      this.nextSetCountMark += this.setCountInterval;
-    }
-  }
-
-  publishTable(){
-    if (this.isPublishing) {
-      var data = this.toHash();
-      data.id = this.tableID();
-      this.messenger.send('insert', data);
-      this.updateTablePublishCount();
-    };
-  }
-
-  tableID(){
-    new Date().getTime() + '_' + this.tablePublishCount
-  }
-
-  startPublishing(){
-    this.isPublishing = true;
   }
 
   tableGet(state, action){

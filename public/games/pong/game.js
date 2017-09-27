@@ -171,11 +171,4 @@ function setupPossibleStatesForAI(){
       }
     }
   }
-
 }
-
-socket.on('ready', function (data) {
-  console.log('socket dey')
-  messenger = new Messenger({});
-  messenger.setSocket(socket);
-})

@@ -14,22 +14,19 @@ class Learner {
     this.perform(action);
     var newState = this.getCurrentState();
     var reward = this.getReward();
-    this.bellmanUpdate(newState, action, reward);
+    this.q.learn(this.state, action, reward, newState, this.alpha, this.gamma);
     this.setState(newState);
     this.decayEpilson();
   }
 
-  bellmanUpdate(newState, action, reward){
-    var bellmanValue = this.modifiedBellman(this.state, newState, action, reward)
-    this.q.set(this.state, action, bellmanValue)
-  }
-
-  modifiedBellman(oldState, newState, action, reward){
-    var Qsa = this.q.get(oldState, action);
-    var aPrime = this.argMaxQ(newState);
-    var QsPrimeAPrime = this.q.get(newState, aPrime);
-
-    return Qsa + (this.alpha * (reward + (this.gamma * QsPrimeAPrime) - Qsa))
+  regressLearn(){
+    var action = this.regressSelectAction();
+    this.perform(action);
+    var reward = this.getReward();
+    var newState = this.getCurrentFeatures();
+    this.q.fit(this.state, action, newState, reward, this.alpha, this.gamma);
+    this.setFeatures(newState);
+    this.decayEpilson();
   }
 
   argMaxQ(state){
@@ -41,8 +38,17 @@ class Learner {
     return choice;
   }
 
+  regressSelectAction(){
+    var choice = Math.random() > this.epilson ? this.regressSelectBestAction() : this.selectRandomAction();
+    return choice;
+  }
+
   selectBestAction(){
     return this.argMaxQ(this.state);
+  }
+
+  regressSelectBestAction(){
+    return this.q.bestAction(this.state);
   }
 
   selectRandomAction(){

@@ -37,19 +37,6 @@ describe('Learner', function () {
     });
   });
 
-  describe('modifiedBellman', function () {
-    it('returns the q value for a given state update, action, and reward', function () {
-      testQ = new Q(['a', 'b'], [1, 2]);
-      sinon.stub(Learner.prototype, 'getCurrentState').returns('a');
-      testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
-      testQ.set('b', 1, 10);
-      testQ.set('a', 2, 1);
-
-      expect(testLearner.modifiedBellman('a', 'b', 2, 10)).to.equal(4.6)
-      Learner.prototype.getCurrentState.restore();
-    })
-  });
-
   describe('selectBestAction', function () {
     it('returns argMaxQ at the current state', function () {
       testQ = new Q(['a', 'b'], [1, 2]);
@@ -84,7 +71,7 @@ describe('Learner', function () {
       Learner.prototype.getReward.restore();
     });
 
-    it('sets Q(currentState, currentAction) using modifiedBellman equation',function () {
+    it('sets Q(currentState, currentAction) using q learning method',function () {
       testQ = new Q(['a', 'b'], [1, 2]);
       testQ.set('b', 1, 10);
       testQ.set('a', 2, 10);
@@ -99,11 +86,11 @@ describe('Learner', function () {
       sinon.stub(Learner.prototype, 'perform');
 
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
-      modifiedBellmanSpy = sinon.spy(testLearner, 'modifiedBellman')
+      qLearningMethodSpy = sinon.spy(testQ, 'learn')
 
       testLearner.learn();
 
-      expect(modifiedBellmanSpy.calledWithExactly('a', 'b', 2, 10)).to.be.true;
+      expect(qLearningMethodSpy.calledWithExactly('a', 2, 10, 'b', 0.2, 0.9)).to.be.true;
       expect(testLearner.q.get('a', 2)).to.equal(11.8);
 
       Learner.prototype.getCurrentState.restore();
@@ -125,7 +112,6 @@ describe('Learner', function () {
       sinon.stub(Learner.prototype, 'selectAction').returns(2);
       sinon.stub(Learner.prototype, 'getReward');
       sinon.stub(Learner.prototype, 'perform');
-      sinon.stub(Learner.prototype, 'bellmanUpdate');
 
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
 
@@ -136,7 +122,6 @@ describe('Learner', function () {
       Learner.prototype.getCurrentState.restore();
       Learner.prototype.selectAction.restore();
       Learner.prototype.perform.restore();
-      Learner.prototype.bellmanUpdate.restore();
     })
   })
 })
