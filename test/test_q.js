@@ -20,16 +20,28 @@ describe('Q', function () {
     })
   });
 
+  describe('setLearningParameters', function () {
+    it('sets alpha, gamma and epilson', function () {
+      testQ = new Q(['a', 'b'],[1, 2]);
+
+      testQ.setLearningParameters(0.2, 0.8, 0.9);
+      expect(testQ.alpha).to.eql(0.2)
+      expect(testQ.gamma).to.eql(0.8)
+      expect(testQ.epilson).to.eql(0.9)
+    });
+  });
+
   describe('learn', function () {
     it('returns the value at the provided state and action pair', function () {
       var testMatrix = new Matrix(2, 2, [[1,3],[1,3]]);
       testQ = new Q(['a', 'b'],[1, 2], testMatrix);
+      testQ.setLearningParameters(0.2, 0.8, 0.9);
 
-      testQ.learn('a', 1, 5, 'b', 0.2, 0.8)
+      testQ.learn('a', 1, 5, 'b')
 
       //Q(s,a) = (Q(s,a) * (1 - alpha)) + (alpha * [r + gamma * Qprime(s,a)])
       // = (1 * (1 - 0.2)) + (0.2 * (5 + (0.8 * 3)))
-      expect(testQ.table.body).to.eql([[2.28, 3],[1,3]])
+      expect(testQ.table.roundedBody(4)).to.eql([[2.28, 3],[1,3]])
     });
   });
 

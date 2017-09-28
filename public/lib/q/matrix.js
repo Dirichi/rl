@@ -72,6 +72,25 @@ class Matrix{
     return [this.numRows, this.numColumns]
   }
 
+  roundedBody(val){ //perhaps this method should be given to arrays
+    var result = []
+    this.body.forEach(function (row) {
+      var rowArray = [];
+      row.forEach((e) => rowArray.push(Math.round(e * Math.pow(10, val)) / Math.pow(10, val)));
+      result.push(rowArray)
+    });
+    return result;
+  }
+
+  toString(){
+    var string = '';
+    this.body.forEach(function (row) {
+      string += row.map((e) => e.toFixed(4)).join(' , ');
+      string += '\n'
+    });
+    return string;
+  }
+
   row(index){
     //should raise error if out of range
     this.checkOutOfRowRange(index)

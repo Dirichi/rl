@@ -28,12 +28,24 @@ describe('QRegression', function () {
     })
   });
 
-  describe('fit', function () {
+  describe('setLearningParameters', function () {
+    it('sets alpha, gamma and epilson', function () {
+      testQRegression = new QRegression(2,[1, 2]);
+
+      testQRegression.setLearningParameters(0.2, 0.8, 0.9);
+      expect(testQRegression.alpha).to.eql(0.2)
+      expect(testQRegression.gamma).to.eql(0.8)
+      expect(testQRegression.epilson).to.eql(0.9)
+    });
+  });
+
+  describe('learn', function () {
     it('updates the weights of Q', function () {
       testQRegression = new QRegression(2, ['up', 'down']);
       testQRegression.weights.setBody([[1, 0],[2, 1]])
+      testQRegression.setLearningParameters(0.2, 0.8, 0.9);
 
-      testQRegression.fit([0.5, 0.8], 'up', [0.3, 0.6], 3, 0.2, 0.8);
+      testQRegression.learn([0.5, 0.8], 'up', 3, [0.3, 0.6]);
       // w1 = 1
       // w2 = 0
       // w = w + (gradient * stepSize)
@@ -41,7 +53,7 @@ describe('QRegression', function () {
       // w2 = 0 + (0.8 * 0.692)
       // w1 = 1.346
       // w2 = 0.554
-      expect(testQRegression.weights.body).to.eql([[1.346, 0.554], [2, 1]]);
+      expect(testQRegression.weights.roundedBody(4)).to.eql([[1.346, 0.5536], [2, 1]]);
     })
   });
 

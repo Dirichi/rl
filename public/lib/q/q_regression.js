@@ -17,8 +17,10 @@ class QRegression {
     this.experienceSize = 100;
   }
 
-  learn(){
-
+  setLearningParameters(alpha, gamma, epilson){
+    this.alpha = alpha;
+    this.gamma = gamma;
+    this.epilson = epilson;
   }
 
   get(features, action){
@@ -41,23 +43,50 @@ class QRegression {
     return flattenedResult
   }
 
-  fit(features, action, nextFeatures, rewards, alpha, gamma){
-    var h = this.bellmanStepSize(features, action, nextFeatures, rewards, alpha, gamma);
-    var rowIndex = this.actionIndex(action);
+  learn(features, action, rewards, nextFeatures, alpha = this.alpha, gamma = this.gamma){
+    this.storeExperience(features, action, rewards, nextFeatures);
+
+    var transition = this.sampleFromExperience();
+
+    var tFeatures = transition.features
+    var tAction = transition.action
+    var tRewards = transition.rewards
+    var tNextFeatures = transition.nextFeatures
+    var tNextAction = this.bestAction(tNextFeatures);
+
+    var h = this.bellmanStepSize(tFeatures, tAction, tNextFeatures, tRewards, alpha, gamma);
+    var rowIndex = this.actionIndex(tAction);
     var chosenWeights = this.weights.row(rowIndex)
     var that = this;
 
     chosenWeights.forEach(function (weight, weightIndex) {
-      var gradient = that.gradient(features, weightIndex);
+      var gradient = that.gradient(tFeatures, weightIndex);
       var newWeightValue = weight + (gradient * h);
-      newWeightValue = parseFloat(newWeightValue.toFixed(3));
-
       that.weights.set(rowIndex, weightIndex, newWeightValue);
     })
     // var gradient
     // a * (reward + (y * argMax(features)) - get(features, action) )
     // w = w + (gradient * stepSize)
   };
+
+  storeExperience(features, action, rewards, nextFeatures){
+
+    var experience = {
+      features: features,
+      action: action,
+      rewards: rewards,
+      nextFeatures: nextFeatures
+    }
+    if (this.experience.length >= this.experienceSize) {
+      this.experience.splice(0, 1);
+    }
+    this.experience.push(experience);
+  }
+
+  sampleFromExperience(){
+    var transitionIndex = parseInt(Math.random() * this.experience.length);
+    return this.experience[this.experience.length - transitionIndex - 1]
+  }
 
   gradient(features, weightIndex){
     return features[weightIndex]
@@ -71,15 +100,13 @@ class QRegression {
   stepSize(features, action, nextFeatures, nextAction, rewards, alpha, gamma){
     var Qsa = this.get(features, action);
     var QsPrimeAPrime = this.get(nextFeatures, nextAction);
+
     var f1 = rewards + (gamma * QsPrimeAPrime);
     var f0 = Qsa
 
     var h = alpha * (f1 - f0);
-    return parseFloat(h.toFixed(3));
-  }
-
-  transformState(state){
-
+    // return h;
+    return parseFloat(h.toFixed(5));
   }
 
   actionIndex(action){

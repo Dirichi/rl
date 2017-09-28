@@ -7,6 +7,8 @@ class Learner {
     this.agent = agent;
     this.episodes = [];
     this.setState(this.getCurrentState());
+    this.setLearningParameters();
+    // this.setFeatures(this.getCurrentFeatures());
   }
 
   learn(){
@@ -14,9 +16,13 @@ class Learner {
     this.perform(action);
     var newState = this.getCurrentState();
     var reward = this.getReward();
-    this.q.learn(this.state, action, reward, newState, this.alpha, this.gamma);
+    this.q.learn(this.state, action, reward, newState);
     this.setState(newState);
     this.decayEpilson();
+  }
+
+  setLearningParameters(){
+    this.q.setLearningParameters(this.alpha, this.gamma, this.epilson);
   }
 
   regressLearn(){
@@ -24,7 +30,7 @@ class Learner {
     this.perform(action);
     var reward = this.getReward();
     var newState = this.getCurrentFeatures();
-    this.q.fit(this.state, action, newState, reward, this.alpha, this.gamma);
+    this.q.learn(this.state, action, reward, newState);
     this.setFeatures(newState);
     this.decayEpilson();
   }
@@ -70,9 +76,16 @@ class Learner {
     this.state = newState;
   }
 
+  setFeatures(newFeatures){
+    this.state = newFeatures
+  }
 
   getCurrentState(){
     return this.agent.getState()
+  }
+
+  getCurrentFeatures(){
+    return this.agent.getFeatures();
   }
 
   getReward(){
@@ -80,20 +93,10 @@ class Learner {
   }
 
   decayEpilson(){
-    this.epilson *= 0.99999999
-
+    this.epilson *= 0.99
   }
 
-  storeBellmanUpdate(state, action, reward){
-    var data = {
-      state: state,
-      action: action,
-      reward: reward
-    }
-
-  }
-
-  dbInsert(data){
+  learningMethods(){
 
   }
 

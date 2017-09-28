@@ -13,7 +13,9 @@ class Q {
     this.states = states
     this.actions = actions
     this.table = table; // replace with a set table method that checks if table matches dimensions
-    this.setCount = 0;
+    this.alpha;
+    this.gamma;
+    this.epilson;
   }
 
   static fromHash(hash){
@@ -36,15 +38,19 @@ class Q {
     return q;
   }
 
-  learn(oldState, action, reward, newState, alpha, gamma){
+  learn(oldState, action, reward, newState){
     var Qsa = this.get(oldState, action)
     var bestAction = this.argMax(newState)
     var QPrimeSa = this.get(newState, bestAction)
-    var newQsa = (Qsa * (1 - alpha)) + alpha * (reward + gamma * QPrimeSa)
-
-    newQsa = Math.round(newQsa * Math.pow(10, 6)) / Math.pow(10, 6) // extract rounding into a common function
+    var newQsa = (Qsa * (1 - this.alpha)) + this.alpha * (reward + this.gamma * QPrimeSa)
 
     this.set(oldState, action, newQsa)
+  }
+
+  setLearningParameters(alpha, gamma, epilson){
+    this.alpha = alpha;
+    this.gamma = gamma;
+    this.epilson = epilson;
   }
 
   get(state, action){

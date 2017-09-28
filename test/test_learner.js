@@ -90,7 +90,7 @@ describe('Learner', function () {
 
       testLearner.learn();
 
-      expect(qLearningMethodSpy.calledWithExactly('a', 2, 10, 'b', 0.2, 0.9)).to.be.true;
+      expect(qLearningMethodSpy.calledWithExactly('a', 2, 10, 'b')).to.be.true;
       expect(testLearner.q.get('a', 2)).to.equal(11.8);
 
       Learner.prototype.getCurrentState.restore();
