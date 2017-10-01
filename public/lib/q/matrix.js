@@ -68,6 +68,15 @@ class Matrix{
     }
   }
 
+  scalarProduct(scalar) {
+    var resultArray = [];
+    this.body.forEach(function (row) {
+      var newRow = row.map((val) => val * scalar)
+      resultArray.push(newRow);
+    });
+    return new Matrix(this.numRows, this.numColumns, resultArray);
+  }
+
   dimensions(){
     return [this.numRows, this.numColumns]
   }
@@ -160,8 +169,6 @@ class Matrix{
     }
     return nestedSum;
   }
-
-
 }
 
 module.exports = Matrix
