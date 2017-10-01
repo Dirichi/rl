@@ -1,13 +1,3 @@
-var has_require = typeof require !== 'undefined'
-
-if( typeof Matrix === 'undefined' ) {
-  if( has_require ) {
-    Matrix = require('../q/matrix')
-  }
-  else throw new Error('q_regression requires matrix');
-}
-
-
 class QRegression {
   constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures)) {
     this.numFeatures = numFeatures
@@ -163,12 +153,4 @@ class QRegression {
   }
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = QRegression;
-  }
-  exports.QRegression = QRegression;
-}
-else {
-  this.QRegression = QRegression;
-}
+module.exports = QRegression

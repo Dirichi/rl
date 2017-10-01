@@ -102,12 +102,4 @@ class Learner {
 
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Learner
-  }
-  exports.Learner = Learner
-}
-else {
-  this.Learner = Learner
-}
+module.exports = Learner

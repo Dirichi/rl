@@ -164,12 +164,4 @@ class Matrix{
 
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Matrix;
-  }
-  exports.Matrix = Matrix;
-}
-else {
-  this.Matrix = Matrix;
-}
+module.exports = Matrix

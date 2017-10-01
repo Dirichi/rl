@@ -97,15 +97,4 @@ class Boundary {
     var regionIndex = (entity.ypos - this.yBounds[0]) / yGranularity;
     return Math.abs(Math.round(regionIndex));
   }
-
-}
-
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Boundary
-  }
-  exports.Boundary = Boundary
-}
-else {
-  this.Boundary = Boundary
 }

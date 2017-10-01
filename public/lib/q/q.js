@@ -1,12 +1,4 @@
-var has_require = typeof require !== 'undefined'
-
-if( typeof Matrix === 'undefined' ) {
-  if( has_require ) {
-    Matrix = require('../q/matrix')
-  }
-  else throw new Error('q requires matrix');
-}
-
+Matrix = require('../q/matrix')
 
 class Q {
   constructor(states, actions, table = new Matrix(states.length, actions.length)) {
@@ -147,12 +139,4 @@ class Q {
   }
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Q;
-  }
-  exports.Q = Q;
-}
-else {
-  this.Q = Q;
-}
+module.exports = Q

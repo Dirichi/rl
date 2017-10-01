@@ -8,7 +8,6 @@ class Paddle {
     this.actions = ['up', 'down'];
     this.rewards = [];
     this.boundary;
-    this.type = 'rect';
 
     this.brain;
     this.environment;
@@ -120,14 +119,4 @@ class Paddle {
   yRegion(){
     return this.boundary.yRegionFor(this);
   }
-}
-
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Paddle
-  }
-  exports.Paddle = Paddle
-}
-else {
-  this.Paddle = Paddle
 }

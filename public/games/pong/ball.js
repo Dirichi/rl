@@ -133,14 +133,3 @@ class Ball {
     return this.boundary.yRegionFor(this);
   }
 }
-
-
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Ball;
-  }
-  exports.Ball = Ball;
-}
-else {
-  this.Ball = Ball;
-}
