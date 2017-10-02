@@ -93,7 +93,7 @@ class Learner {
   }
 
   decayEpilson(){
-    this.epilson *= 0.99
+    this.epilson *= 0.9999
   }
 
   learningMethods(){

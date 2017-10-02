@@ -149,6 +149,11 @@ class Matrix{
     this.body[rowIndex][columnIndex] = value
   };
 
+  setRow(rowIndex, value){
+    // need to do some checking here
+    this.body[rowIndex] = value;
+  };
+
   preventOutOfRange(rowIndex, columnIndex){
     if (this.indexOutOfRange(rowIndex, columnIndex)) {
       throw new Error('provided index is out of range of matrix dimensions');

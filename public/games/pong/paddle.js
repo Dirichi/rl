@@ -8,6 +8,7 @@ class Paddle {
     this.actions = ['up', 'down'];
     this.rewards = [];
     this.boundary;
+    this.type = 'rect';
 
     this.brain;
     this.environment;

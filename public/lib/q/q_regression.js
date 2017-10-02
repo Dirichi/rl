@@ -1,3 +1,5 @@
+Matrix = require('../q/matrix')
+
 class QRegression {
   constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures)) {
     this.numFeatures = numFeatures
@@ -5,12 +7,17 @@ class QRegression {
     this.weights = weights; // add a set weights method
     this.experience = [];
     this.experienceSize = 100;
+    this.batchSize = 10;
   }
 
   setLearningParameters(alpha, gamma, epilson){
     this.alpha = alpha;
     this.gamma = gamma;
     this.epilson = epilson;
+  }
+
+  setBatchSize(size){
+    this.batchSize = size;
   }
 
   get(features, action){
@@ -22,10 +29,9 @@ class QRegression {
   }
 
   getValuesForAllActions(features){
-    var featuresMatrix = new Matrix(this.numFeatures, 1);
     var featuresMatrixBody = features.map((f) => [f])
+    var featuresMatrix = new Matrix(this.numFeatures, 1, featuresMatrixBody);
 
-    featuresMatrix.setBody(featuresMatrixBody)
     var resultMatrix = Matrix.product(this.weights, featuresMatrix)
     var resultMatrixBody = resultMatrix.body
     var flattenedResult = [].concat.apply([], resultMatrixBody)
@@ -33,34 +39,40 @@ class QRegression {
     return flattenedResult
   }
 
-  learn(features, action, rewards, nextFeatures, alpha = this.alpha, gamma = this.gamma){
+  learn(features, action, rewards, nextFeatures){
     this.storeExperience(features, action, rewards, nextFeatures);
 
-    var transition = this.sampleFromExperience();
+    if (this.experience.length >= this.batchSize) {
+      var newWeightValuesHash = {}
 
-    var tFeatures = transition.features
-    var tAction = transition.action
-    var tRewards = transition.rewards
-    var tNextFeatures = transition.nextFeatures
-    var tNextAction = this.bestAction(tNextFeatures);
+      for (var i = 0; i < this.batchSize; i++) {
+        var transition = this.sampleFromExperience();
+        var rowIndex = this.actionIndex(transition.action)
+        var stepSize = this.bellmanStepSizeForTransition(transition);
+        var newWeightValues = this.calculatedWeightValues(transition.features, rowIndex, stepSize);
 
-    var h = this.bellmanStepSize(tFeatures, tAction, tNextFeatures, tRewards, alpha, gamma);
-    var rowIndex = this.actionIndex(tAction);
-    var chosenWeights = this.weights.row(rowIndex)
-    var that = this;
+        if (newWeightValuesHash[rowIndex]) {
+          var newValue = newWeightValuesHash[rowIndex].val.map((val, index) => val + newWeightValues[index])
+          newWeightValuesHash[rowIndex].val = newValue
+          newWeightValuesHash[rowIndex].count += 1
+        }
+        else{
+          newWeightValuesHash[rowIndex] = {}
+          newWeightValuesHash[rowIndex].val = newWeightValues
+          newWeightValuesHash[rowIndex].count = 1
+        }
+      }
+      var that = this;
 
-    chosenWeights.forEach(function (weight, weightIndex) {
-      var gradient = that.gradient(tFeatures, weightIndex);
-      var newWeightValue = weight + (gradient * h);
-      that.weights.set(rowIndex, weightIndex, newWeightValue);
-    })
-    // var gradient
-    // a * (reward + (y * argMax(features)) - get(features, action) )
-    // w = w + (gradient * stepSize)
+      Object.keys(newWeightValuesHash).forEach(function (actionIndex) {
+        var summedWeightValues = newWeightValuesHash[actionIndex].val
+        var average = summedWeightValues.map((v) => v / newWeightValuesHash[actionIndex].count)
+        that.updateWeights(actionIndex, average);
+      });
+    }
   };
 
   storeExperience(features, action, rewards, nextFeatures){
-
     var experience = {
       features: features,
       action: action,
@@ -78,8 +90,44 @@ class QRegression {
     return this.experience[this.experience.length - transitionIndex - 1]
   }
 
+  sampleFromExperienceCount(count){
+    var experienceArray = []
+    for (var i = 0; i < count; i++) {
+      experienceArray.push(this.sampleFromExperience());
+    }
+
+    return experienceArray;
+  }
+
+  gradientsForTransition(transition){
+    return transition.features;
+  }
+
+  updateWeights(rowIndex, newWeightValues){
+    this.weights.setRow(rowIndex, newWeightValues);
+  };
+
+  calculatedWeightValues(features, rowIndex, stepSize){
+    var selectedWeights = this.weights.row(rowIndex);
+
+    // need to optimize these to use the matrix library
+    var weightDeltas = features.map((val) => val * stepSize);
+    var newWeightValues = selectedWeights.map((val, index) => val + weightDeltas[index]);
+
+    return newWeightValues;
+  }
+
   gradient(features, weightIndex){
     return features[weightIndex]
+  }
+
+  bellmanStepSizeForTransition(transition){
+    var tFeatures = transition.features;
+    var tAction = transition.action;
+    var tRewards = transition.rewards;
+    var tNextFeatures = transition.nextFeatures;
+
+    return this.bellmanStepSize(tFeatures, tAction, tNextFeatures, tRewards, this.alpha, this.gamma);
   }
 
   bellmanStepSize(features, action, nextFeatures, rewards, alpha, gamma){

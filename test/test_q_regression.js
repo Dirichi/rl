@@ -52,9 +52,66 @@ describe('QRegression', function () {
       // w1 = 1 + (0.5 * 0.692)
       // w2 = 0 + (0.8 * 0.692)
       // w1 = 1.346
-      // w2 = 0.554
+      // w2 = 0.5536
       expect(testQRegression.weights.roundedBody(4)).to.eql([[1.346, 0.5536], [2, 1]]);
-    })
+    });
+
+    it('does not update weights if the size of the experience buffer < batchSize', function () {
+      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression.weights.setBody([[1, 0],[2, 1]])
+      testQRegression.setLearningParameters(0.2, 0.8, 0.9);
+      testQRegression.setBatchSize(2);
+
+      testQRegression.learn([0.5, 0.8], 'up', 3, [0.3, 0.6]);
+      expect(testQRegression.weights.roundedBody(4)).to.eql([[1, 0], [2, 1]]);
+    });
+
+    it('correctly handles weight updates for batchsizes greater than 1', function () {
+      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression.weights.setBody([[1, 0],[2, 1]])
+      testQRegression.setLearningParameters(0.2, 0.8, 0.9);
+      testQRegression.setBatchSize(2);
+
+      var pastExperience = {
+        features: [0.5, 0.6],
+        action: 'down',
+        rewards: 4,
+        nextFeatures: [0.5, 0.8]
+      }
+
+      testQRegression.experience.push(pastExperience)
+      testQRegression.learn([0.5, 0.8], 'up', 3, [0.3, 0.6]);
+
+      // for pastExperience
+
+      // weights = [2, 1]
+      // stepSize = (r + gamma * Q(sprime, aprime)) - Q(s,a)
+      // Q(s, a) = [2, 1] * [0.5, 0.6] = 1.6
+      // Q(sprime) => 1 0   0.5 -->  0.5
+      //              2 1   0.8 -->  1.8
+      // Q(sprime, aprime) = 1.8
+      // r = 4
+      // stepSize = (4 + 0.8 * 1.8) - (1.6) = 3.84
+      // h = alpha * stepsize = 0.2 * 3.84 = 0.768
+
+      //w0 = 2
+      //w1 = 1
+      //w = w + (gradient * stepSize)
+      //w0 = 2 + (0.5 * 0.768) = 2.384
+      //w1 = 1 + (0.6 * 0.768) = 1.4608
+      //wpast = [1,0],[2.384, 1.4608]
+
+      //for nextExperience
+      //wnext = [1.346, 0.5536],[2,1]
+
+      //group by action
+      // up -> [1.346, 0.5536]
+      // down -> [2.384, 1.4608]
+
+      //wavg = [1.346, 0.5536], [2.384, 1.4608]
+
+      expect(testQRegression.weights.roundedBody(4)).to.eql([[1.346, 0.5536], [2.384, 1.4608]]);
+    });
   });
 
   describe('bellmanStepSize', function () {
