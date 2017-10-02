@@ -95,11 +95,6 @@ class Learner {
   decayEpilson(){
     this.epilson *= 0.9999
   }
-
-  learningMethods(){
-
-  }
-
 }
 
 module.exports = Learner

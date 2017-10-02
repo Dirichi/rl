@@ -1,6 +1,6 @@
 var chai = require("chai");
 var expect = chai.expect;
-var sinon = require('sinon')
+var sinon = require('sinon');
 var Learner = require('../public/lib/q/learner');
 var Q = require("../public/lib/q/q");
 

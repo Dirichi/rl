@@ -1,6 +1,7 @@
 var expect = require("chai").expect;
 var QRegression = require("../public/lib/q/q_regression");
 var Matrix = require("../public/lib/q/matrix");
+var sinon = require('sinon');
 
 describe('QRegression', function () {
   describe('constructor', function () {
@@ -72,12 +73,25 @@ describe('QRegression', function () {
       testQRegression.setLearningParameters(0.2, 0.8, 0.9);
       testQRegression.setBatchSize(2);
 
+      var randomSampleStub = sinon.stub(QRegression.prototype, 'sampleFromExperience');
+
       var pastExperience = {
         features: [0.5, 0.6],
         action: 'down',
         rewards: 4,
         nextFeatures: [0.5, 0.8]
       }
+
+      var currentExperience = {
+        features: [0.5, 0.8],
+        rewards: 3,
+        action: 'up',
+        nextFeatures: [0.3, 0.6]
+      }
+
+      randomSampleStub.onCall(0).returns(pastExperience);
+      randomSampleStub.onCall(1).returns(currentExperience);
+
 
       testQRegression.experience.push(pastExperience)
       testQRegression.learn([0.5, 0.8], 'up', 3, [0.3, 0.6]);
@@ -111,6 +125,7 @@ describe('QRegression', function () {
       //wavg = [1.346, 0.5536], [2.384, 1.4608]
 
       expect(testQRegression.weights.roundedBody(4)).to.eql([[1.346, 0.5536], [2.384, 1.4608]]);
+      QRegression.prototype.sampleFromExperience.restore();
     });
   });
 

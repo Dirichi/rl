@@ -34,15 +34,6 @@ describe('Matrix', function () {
     })
   });
 
-  describe('scalarProduct', function () {
-    it('returns a matrix of the product of a scalar and a matrix', function () {
-      var matrix = new Matrix(2,2, [[1,2],[3,4]]);
-      var result = matrix.scalarProduct(2);
-
-      expect(result.body).to.eql([[2,4],[6,8]]);
-    })
-  })
-
   describe('row', function () {
     it('returns the row at the specified index', function (){
       var matrix = new Matrix(2,2)

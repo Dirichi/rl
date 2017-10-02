@@ -7,7 +7,7 @@ class QRegression {
     this.weights = weights; // add a set weights method
     this.experience = [];
     this.experienceSize = 100;
-    this.batchSize = 10;
+    this.batchSize = 1;
   }
 
   setLearningParameters(alpha, gamma, epilson){
@@ -40,27 +40,15 @@ class QRegression {
   }
 
   learn(features, action, rewards, nextFeatures){
+    //requires refactoring
+
     this.storeExperience(features, action, rewards, nextFeatures);
 
     if (this.experience.length >= this.batchSize) {
       var newWeightValuesHash = {}
 
       for (var i = 0; i < this.batchSize; i++) {
-        var transition = this.sampleFromExperience();
-        var rowIndex = this.actionIndex(transition.action)
-        var stepSize = this.bellmanStepSizeForTransition(transition);
-        var newWeightValues = this.calculatedWeightValues(transition.features, rowIndex, stepSize);
-
-        if (newWeightValuesHash[rowIndex]) {
-          var newValue = newWeightValuesHash[rowIndex].val.map((val, index) => val + newWeightValues[index])
-          newWeightValuesHash[rowIndex].val = newValue
-          newWeightValuesHash[rowIndex].count += 1
-        }
-        else{
-          newWeightValuesHash[rowIndex] = {}
-          newWeightValuesHash[rowIndex].val = newWeightValues
-          newWeightValuesHash[rowIndex].count = 1
-        }
+        this.collectWeightValuesIntoHash(newWeightValuesHash)
       }
       var that = this;
 
@@ -71,6 +59,24 @@ class QRegression {
       });
     }
   };
+
+  collectWeightValuesIntoHash(newWeightValuesHash){
+    var transition = this.sampleFromExperience();
+    var rowIndex = this.actionIndex(transition.action)
+    var stepSize = this.bellmanStepSizeForTransition(transition);
+    var newWeightValues = this.calculatedWeightValues(transition.features, rowIndex, stepSize);
+
+    if (newWeightValuesHash[rowIndex]) {
+      var newValue = newWeightValuesHash[rowIndex].val.map((val, index) => val + newWeightValues[index])
+      newWeightValuesHash[rowIndex].val = newValue
+      newWeightValuesHash[rowIndex].count += 1
+    }
+    else{
+      newWeightValuesHash[rowIndex] = {}
+      newWeightValuesHash[rowIndex].val = newWeightValues
+      newWeightValuesHash[rowIndex].count = 1
+    }
+  }
 
   storeExperience(features, action, rewards, nextFeatures){
     var experience = {
