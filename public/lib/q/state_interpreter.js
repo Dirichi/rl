@@ -1,6 +1,5 @@
-class StateObserver {
-  constructor(observables = [], strategy){
-    this.observables = observables;
+class StateInterpreter {
+  constructor(strategy){
     this.setStrategy(strategy);
   }
 
@@ -19,18 +18,18 @@ class StateObserver {
   };
 
   strategyNotAllowed(strategy){
-    return StateObserver.allowedStrategies().indexOf(strategy) == -1
+    return StateInterpreter.allowedStrategies().indexOf(strategy) == -1
   };
 
-  getCurrentState(){
+  interpreteState(observables){
     this.checkStrategyIsAllowed(this.strategy);
     if (this.strategy == 'string-concat') {
-      return this.observables.reduce((accumulator, observable) => accumulator + observable, '');
+      return observables.reduce((accumulator, observable) => accumulator + observable, '');
     }
     else if (this.strategy == 'array-of-features') {
-      return this.observables;
+      return observables;
     }
   }
 }
 
-module.exports = StateObserver;
+module.exports = StateInterpreter;

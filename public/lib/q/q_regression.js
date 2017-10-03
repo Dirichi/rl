@@ -1,14 +1,20 @@
-Matrix = require('../q/matrix')
+Matrix = require('../q/matrix');
+StateInterpreter = require('../q/state_interpreter');
 
 class QRegression {
-  constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures)) {
+  constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures), interpreter = new StateInterpreter('array-of-features')) {
     this.numFeatures = numFeatures
     this.actions = actions;
     this.weights = weights; // add a set weights method
     this.experience = [];
     this.experienceSize = 100;
     this.batchSize = 1;
+    this.interpreter = interpreter;
   }
+
+  setEnvironment(environment){
+    this.environment = environment
+  };
 
   setLearningParameters(alpha, gamma, epilson){
     this.alpha = alpha;
@@ -41,7 +47,6 @@ class QRegression {
 
   learn(features, action, rewards, nextFeatures){
     //requires refactoring
-
     this.storeExperience(features, action, rewards, nextFeatures);
 
     if (this.experience.length >= this.batchSize) {
@@ -204,6 +209,10 @@ class QRegression {
     actionIndex = Math.floor(actionIndex);
 
     return this.actions[actionIndex];
+  }
+
+  getCurrentState(){
+    return this.interpreter.interpreteState(this.environment.observables());
   }
 }
 

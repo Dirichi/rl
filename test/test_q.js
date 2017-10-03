@@ -1,7 +1,7 @@
 var expect = require("chai").expect;
 var Q = require("../public/lib/q/q");
 var Matrix = require("../public/lib/q/matrix");
-
+var StateInterpreter = require("../public/lib/q/state_interpreter");
 
 describe('Q', function () {
   describe('constructor', function () {
@@ -86,18 +86,18 @@ describe('Q', function () {
     })
   });
 
-  describe('argMax', function () {
+  describe('bestAction', function () {
     it('returns the action arguments for the maxima on Q for a given state', function () {
       testQ = new Q(['a', 'b'], [1, 2]);
       testQ.set('a', 2, 1);
 
-      expect(testQ.argMax('a')).to.equal(2);
+      expect(testQ.bestAction('a')).to.equal(2);
     });
 
     it('throws an error if the provided state does not exist', function () {
       testQ = new Q(['a'], [1, 2]);
 
-      expect(testQ.argMax.bind(testQ, 'b')).to.throw('Q instance does not have provided state b');
+      expect(testQ.bestAction.bind(testQ, 'b')).to.throw('Q instance does not have provided state b');
     })
   });
 
@@ -118,5 +118,15 @@ describe('Q', function () {
       expect(testQ.table.body).to.eql([[5,7],[6,3]]);
 
     })
-  })
+  });
+
+  describe('getCurrentState', function () {
+    it('returns the state of the environment', function () {
+      environment = { observables: function () { return [10, 5] } }
+      testQ = new Q(['a', 'b'], [1, 2]);
+      testQ.setEnvironment(environment);
+
+      expect(testQ.getCurrentState()).to.eql('105');
+    })
+  });
 })

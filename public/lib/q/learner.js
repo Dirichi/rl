@@ -8,7 +8,6 @@ class Learner {
     this.episodes = [];
     this.setState(this.getCurrentState());
     this.setLearningParameters();
-    // this.setFeatures(this.getCurrentFeatures());
   }
 
   learn(){
@@ -25,35 +24,12 @@ class Learner {
     this.q.setLearningParameters(this.alpha, this.gamma, this.epilson);
   }
 
-  regressLearn(){
-    var action = this.regressSelectAction();
-    this.perform(action);
-    var reward = this.getReward();
-    var newState = this.getCurrentFeatures();
-    this.q.learn(this.state, action, reward, newState);
-    this.setFeatures(newState);
-    this.decayEpilson();
-  }
-
-  argMaxQ(state){
-    return this.q.argMax(state);
-  }
-
   selectAction(){
     var choice = Math.random() > this.epilson ? this.selectBestAction() : this.selectRandomAction();
     return choice;
-  }
-
-  regressSelectAction(){
-    var choice = Math.random() > this.epilson ? this.regressSelectBestAction() : this.selectRandomAction();
-    return choice;
-  }
+  };
 
   selectBestAction(){
-    return this.argMaxQ(this.state);
-  }
-
-  regressSelectBestAction(){
     return this.q.bestAction(this.state);
   }
 
@@ -70,22 +46,11 @@ class Learner {
   }
 
   setState(newState){
-    if (!this.q.hasState(newState)) {
-      throw new Error(newState + ' is not an allowed state');
-    }
     this.state = newState;
   }
 
-  setFeatures(newFeatures){
-    this.state = newFeatures
-  }
-
   getCurrentState(){
-    return this.agent.getState()
-  }
-
-  getCurrentFeatures(){
-    return this.agent.getFeatures();
+    return this.q.getCurrentState();
   }
 
   getReward(){

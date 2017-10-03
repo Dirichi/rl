@@ -64,10 +64,6 @@ class Paddle {
 
   }
 
-  getState(){
-    return this.environment.getStateForAI();
-  }
-
   getReward(){
     return this.environment.getRewardsForAI();
   }

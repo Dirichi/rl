@@ -26,19 +26,10 @@ describe('Learner', function () {
       expect(testLearner.getState()).to.equal('b');
       Learner.prototype.getCurrentState.restore();
     });
-
-    it('throws an error if the provided state is not included in the Q table', function () {
-      testQ = new Q(['a'], [1]);
-      sinon.stub(Learner.prototype, 'getCurrentState').returns('a');
-      testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
-
-      expect(testLearner.setState.bind(testLearner, 'b')).to.throw('b is not an allowed state');
-      Learner.prototype.getCurrentState.restore();
-    });
   });
 
   describe('selectBestAction', function () {
-    it('returns argMaxQ at the current state', function () {
+    it('returns bestAction at the current state', function () {
       testQ = new Q(['a', 'b'], [1, 2]);
       sinon.stub(Learner.prototype, 'getCurrentState').returns('a');
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
@@ -57,7 +48,7 @@ describe('Learner', function () {
       sinon.stub(Learner.prototype, 'selectAction').returns(2);
       sinon.stub(Learner.prototype, 'getReward').returns(10);
 
-      learnerPerformSpy = sinon.stub(Learner.prototype, 'perform')
+      learnerPerformSpy = sinon.stub(Learner.prototype, 'perform');
 
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
 

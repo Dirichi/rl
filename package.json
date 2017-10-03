@@ -6,7 +6,7 @@
     "node": ">= 0.10.0"
   },
   "scripts": {
-    "start": "node app.js",
+    "start": "browserify public/lib/q/root.js > public/lib/q/bundle.js; node app.js",
     "test": "./node_modules/.bin/mocha --reporter spec"
   },
   "dependencies": {

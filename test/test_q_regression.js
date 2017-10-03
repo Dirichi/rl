@@ -2,6 +2,7 @@ var expect = require("chai").expect;
 var QRegression = require("../public/lib/q/q_regression");
 var Matrix = require("../public/lib/q/matrix");
 var sinon = require('sinon');
+var StateInterpreter = require("../public/lib/q/state_interpreter");
 
 describe('QRegression', function () {
   describe('constructor', function () {
@@ -17,7 +18,7 @@ describe('QRegression', function () {
 
       expect(testQRegression.weights.numRows).to.eql(3);
       expect(testQRegression.weights.numColumns).to.eql(2);
-    })
+    });
   });
 
   describe('get', function () {
@@ -164,6 +165,16 @@ describe('QRegression', function () {
       testQRegression = new QRegression(5, ['up', 'down']);
 
       expect(testQRegression.argMaxValueAndActionFor.bind(testQRegression, [0.5, 0.8])).to.throw('provided features different in dimension from Q instance weights');
+    })
+  });
+
+  describe('getCurrentState', function () {
+    it('returns the state of the environment', function () {
+      environment = { observables: function () { return [10] } }
+      testQRegression = new QRegression(5, [1, 2]);
+      testQRegression.setEnvironment(environment);
+
+      expect(testQRegression.getCurrentState()).to.eql([10]);
     })
   });
 });

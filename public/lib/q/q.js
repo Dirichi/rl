@@ -1,13 +1,20 @@
-Matrix = require('../q/matrix')
+Matrix = require('../q/matrix');
+StateInterpreter = require('../q/state_interpreter');
 
 class Q {
-  constructor(states, actions, table = new Matrix(states.length, actions.length)) {
+  constructor(states, actions, table = new Matrix(states.length, actions.length), interpreter = new StateInterpreter('string-concat')) {
     this.states = states
     this.actions = actions
     this.table = table; // replace with a set table method that checks if table matches dimensions
     this.alpha;
     this.gamma;
     this.epilson;
+    this.interpreter = interpreter;
+    this.environment;
+  }
+
+  setEnvironment(environment){
+    this.environment = environment;
   }
 
   static fromHash(hash){
@@ -32,7 +39,7 @@ class Q {
 
   learn(oldState, action, reward, newState){
     var Qsa = this.get(oldState, action)
-    var bestAction = this.argMax(newState)
+    var bestAction = this.bestAction(newState)
     var QPrimeSa = this.get(newState, bestAction)
     var newQsa = (Qsa * (1 - this.alpha)) + this.alpha * (reward + this.gamma * QPrimeSa)
 
@@ -97,7 +104,11 @@ class Q {
     }
   }
 
-  argMax(state){
+  getCurrentState(){
+    return this.interpreter.interpreteState(this.environment.observables());
+  }
+
+  bestAction(state){
     var maxAction = this.actions[0];
     var that = this;
     this.actions.forEach(function (action) {
