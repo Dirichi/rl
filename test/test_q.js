@@ -1,14 +1,48 @@
 var expect = require("chai").expect;
 var Q = require("../public/lib/q/q");
+var Matrix = require("../public/lib/q/matrix");
+var StateInterpreter = require("../public/lib/q/state_interpreter");
 
 describe('Q', function () {
   describe('constructor', function () {
     it('creates a table for each instance of Q', function () {
+      var testMatrix = new Matrix(2, 2, [[1,1],[1,1]]);
+      testQ = new Q(['a','b'],[1,2,3], testMatrix);
+
+      expect(testQ.table.body).to.eql([[1,1],[1,1]]);
+    })
+
+    it('creates a random table if no table is provided', function () {
       testQ = new Q(['a','b'],[1,2,3]);
 
       expect(testQ.table.numRows).to.eql(2);
       expect(testQ.table.numColumns).to.eql(3);
     })
+  });
+
+  describe('setLearningParameters', function () {
+    it('sets alpha, gamma and epilson', function () {
+      testQ = new Q(['a', 'b'],[1, 2]);
+
+      testQ.setLearningParameters(0.2, 0.8, 0.9);
+      expect(testQ.alpha).to.eql(0.2)
+      expect(testQ.gamma).to.eql(0.8)
+      expect(testQ.epilson).to.eql(0.9)
+    });
+  });
+
+  describe('learn', function () {
+    it('returns the value at the provided state and action pair', function () {
+      var testMatrix = new Matrix(2, 2, [[1,3],[1,3]]);
+      testQ = new Q(['a', 'b'],[1, 2], testMatrix);
+      testQ.setLearningParameters(0.2, 0.8, 0.9);
+
+      testQ.learn('a', 1, 5, 'b')
+
+      //Q(s,a) = (Q(s,a) * (1 - alpha)) + (alpha * [r + gamma * Qprime(s,a)])
+      // = (1 * (1 - 0.2)) + (0.2 * (5 + (0.8 * 3)))
+      expect(testQ.table.roundedBody(4)).to.eql([[2.28, 3],[1,3]])
+    });
   });
 
   describe('get', function () {
@@ -52,18 +86,18 @@ describe('Q', function () {
     })
   });
 
-  describe('argMax', function () {
+  describe('bestAction', function () {
     it('returns the action arguments for the maxima on Q for a given state', function () {
       testQ = new Q(['a', 'b'], [1, 2]);
       testQ.set('a', 2, 1);
 
-      expect(testQ.argMax('a')).to.equal(2);
+      expect(testQ.bestAction('a')).to.equal(2);
     });
 
     it('throws an error if the provided state does not exist', function () {
       testQ = new Q(['a'], [1, 2]);
 
-      expect(testQ.argMax.bind(testQ, 'b')).to.throw('Q instance does not have provided state b');
+      expect(testQ.bestAction.bind(testQ, 'b')).to.throw('Q instance does not have provided state b');
     })
   });
 
@@ -84,5 +118,15 @@ describe('Q', function () {
       expect(testQ.table.body).to.eql([[5,7],[6,3]]);
 
     })
-  })
+  });
+
+  describe('getCurrentState', function () {
+    it('returns the state of the environment', function () {
+      environment = { observables: function () { return [10, 5] } }
+      testQ = new Q(['a', 'b'], [1, 2]);
+      testQ.setEnvironment(environment);
+
+      expect(testQ.getCurrentState()).to.eql('105');
+    })
+  });
 })

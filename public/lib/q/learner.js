@@ -6,7 +6,9 @@ class Learner {
     this.epilson = epilson //exploration rate
     this.agent = agent;
     this.episodes = [];
+    this.rewards = 0;
     this.setState(this.getCurrentState());
+    this.setLearningParameters();
   }
 
   learn(){
@@ -14,35 +16,22 @@ class Learner {
     this.perform(action);
     var newState = this.getCurrentState();
     var reward = this.getReward();
-    this.bellmanUpdate(newState, action, reward);
+    this.q.learn(this.state, action, reward, newState);
     this.setState(newState);
     this.decayEpilson();
   }
 
-  bellmanUpdate(newState, action, reward){
-    var bellmanValue = this.modifiedBellman(this.state, newState, action, reward)
-    this.q.set(this.state, action, bellmanValue)
-  }
-
-  modifiedBellman(oldState, newState, action, reward){
-    var Qsa = this.q.get(oldState, action);
-    var aPrime = this.argMaxQ(newState);
-    var QsPrimeAPrime = this.q.get(newState, aPrime);
-
-    return Qsa + (this.alpha * (reward + (this.gamma * QsPrimeAPrime) - Qsa))
-  }
-
-  argMaxQ(state){
-    return this.q.argMax(state);
+  setLearningParameters(){
+    this.q.setLearningParameters(this.alpha, this.gamma, this.epilson);
   }
 
   selectAction(){
     var choice = Math.random() > this.epilson ? this.selectBestAction() : this.selectRandomAction();
     return choice;
-  }
+  };
 
   selectBestAction(){
-    return this.argMaxQ(this.state);
+    return this.q.bestAction(this.state);
   }
 
   selectRandomAction(){
@@ -58,47 +47,22 @@ class Learner {
   }
 
   setState(newState){
-    if (!this.q.hasState(newState)) {
-      throw new Error(newState + ' is not an allowed state');
-    }
     this.state = newState;
   }
 
-
   getCurrentState(){
-    return this.agent.getState()
+    return this.q.getCurrentState();
   }
 
   getReward(){
-    return this.agent.getReward();
+    var currentReward = this.rewards;
+    this.rewards = 0;
+    return currentReward;
   }
 
   decayEpilson(){
-    this.epilson *= 0.99999999
-
+    this.epilson *= 0.9999
   }
-
-  storeBellmanUpdate(state, action, reward){
-    var data = {
-      state: state,
-      action: action,
-      reward: reward
-    }
-
-  }
-
-  dbInsert(data){
-
-  }
-
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Learner
-  }
-  exports.Learner = Learner
-}
-else {
-  this.Learner = Learner
-}
+module.exports = Learner

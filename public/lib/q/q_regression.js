@@ -1,18 +1,30 @@
-var has_require = typeof require !== 'undefined'
-
-if( typeof Matrix === 'undefined' ) {
-  if( has_require ) {
-    Matrix = require('../q/matrix')
-  }
-  else throw new Error('q_regression requires matrix');
-}
-
+Matrix = require('../q/matrix');
+StateInterpreter = require('../q/state_interpreter');
 
 class QRegression {
-  constructor(numFeatures, actions) {
+  constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures),
+  interpreter = new StateInterpreter('array-of-features')) {
     this.numFeatures = numFeatures
     this.actions = actions;
-    this.weights = new Matrix(this.numFeatures, this.actions.length);
+    this.weights = weights; // add a set weights method
+    this.experience = [];
+    this.experienceSize = 100;
+    this.batchSize = 1;
+    this.interpreter = interpreter;
+  }
+
+  setEnvironment(environment){
+    this.environment = environment
+  };
+
+  setLearningParameters(alpha, gamma, epilson){
+    this.alpha = alpha;
+    this.gamma = gamma;
+    this.epilson = epilson;
+  }
+
+  setBatchSize(size){
+    this.batchSize = size;
   }
 
   get(features, action){
@@ -24,10 +36,9 @@ class QRegression {
   }
 
   getValuesForAllActions(features){
-    var featuresMatrix = new Matrix(this.numFeatures, 1);
     var featuresMatrixBody = features.map((f) => [f])
+    var featuresMatrix = new Matrix(this.numFeatures, 1, featuresMatrixBody);
 
-    featuresMatrix.setBody(featuresMatrixBody)
     var resultMatrix = Matrix.product(this.weights, featuresMatrix)
     var resultMatrixBody = resultMatrix.body
     var flattenedResult = [].concat.apply([], resultMatrixBody)
@@ -35,26 +46,107 @@ class QRegression {
     return flattenedResult
   }
 
-  fit(features, action, nextFeatures, rewards, alpha, gamma){
-    var h = this.bellmanStepSize(features, action, nextFeatures, rewards, alpha, gamma);
-    var rowIndex = this.actionIndex(action);
-    var chosenWeights = this.weights.row(rowIndex)
+  learn(features, action, rewards, nextFeatures){
+    //requires refactoring
+    this.storeExperience(features, action, rewards, nextFeatures);
+
+    if (this.canUpdateWeights()) {
+      var newWeightValuesHash = {}
+      for (var i = 0; i < this.batchSize; i++) {
+        this.collectWeightValuesIntoHash(newWeightValuesHash)
+      }
+      this.updateWeightsWithHash(newWeightValuesHash)
+    }
+  };
+
+  canUpdateWeights(){
+    return this.experience.length >= this.batchSize
+  }
+
+  collectWeightValuesIntoHash(newWeightValuesHash){
+    var transition = this.sampleFromExperience();
+    var rowIndex = this.actionIndex(transition.action)
+    var stepSize = this.bellmanStepSizeForTransition(transition);
+    var newWeightValues = this.calculatedWeightValues(transition.features, rowIndex, stepSize);
+
+    if (newWeightValuesHash[rowIndex]) {
+      var newValue = newWeightValuesHash[rowIndex].val.map((val, index) => val + newWeightValues[index])
+      newWeightValuesHash[rowIndex].val = newValue
+      newWeightValuesHash[rowIndex].count += 1
+    }
+    else{
+      newWeightValuesHash[rowIndex] = {}
+      newWeightValuesHash[rowIndex].val = newWeightValues
+      newWeightValuesHash[rowIndex].count = 1
+    }
+  }
+
+  updateWeightsWithHash(newWeightValuesHash){
     var that = this;
 
-    chosenWeights.forEach(function (weight, weightIndex) {
-      var gradient = that.gradient(features, weightIndex);
-      var newWeightValue = weight + (gradient * h);
-      newWeightValue = parseFloat(newWeightValue.toFixed(3));
+    Object.keys(newWeightValuesHash).forEach(function (actionIndex) {
+      var summedWeightValues = newWeightValuesHash[actionIndex].val;
+      var average = summedWeightValues.map((v) => v / newWeightValuesHash[actionIndex].count);
+      that.updateWeights(actionIndex, average);
+    });
+  }
 
-      that.weights.set(rowIndex, weightIndex, newWeightValue);
-    })
-    // var gradient
-    // a * (reward + (y * argMax(features)) - get(features, action) )
-    // w = w + (gradient * stepSize)
+  storeExperience(features, action, rewards, nextFeatures){
+    var experience = {
+      features: features,
+      action: action,
+      rewards: rewards,
+      nextFeatures: nextFeatures
+    }
+    if (this.experience.length >= this.experienceSize) {
+      this.experience.splice(0, 1);
+    }
+    this.experience.push(experience);
+  }
+
+  sampleFromExperience(){
+    var transitionIndex = parseInt(Math.random() * this.experience.length);
+    return this.experience[this.experience.length - transitionIndex - 1]
+  }
+
+  sampleFromExperienceCount(count){
+    var experienceArray = []
+    for (var i = 0; i < count; i++) {
+      experienceArray.push(this.sampleFromExperience());
+    }
+
+    return experienceArray;
+  }
+
+  gradientsForTransition(transition){
+    return transition.features;
+  }
+
+  updateWeights(rowIndex, newWeightValues){
+    this.weights.setRow(rowIndex, newWeightValues);
   };
+
+  calculatedWeightValues(features, rowIndex, stepSize){
+    var selectedWeights = this.weights.row(rowIndex);
+
+    // need to optimize these to use the matrix library
+    var weightDeltas = features.map((val) => val * stepSize);
+    var newWeightValues = selectedWeights.map((val, index) => val + weightDeltas[index]);
+
+    return newWeightValues;
+  }
 
   gradient(features, weightIndex){
     return features[weightIndex]
+  }
+
+  bellmanStepSizeForTransition(transition){
+    var tFeatures = transition.features;
+    var tAction = transition.action;
+    var tRewards = transition.rewards;
+    var tNextFeatures = transition.nextFeatures;
+
+    return this.bellmanStepSize(tFeatures, tAction, tNextFeatures, tRewards, this.alpha, this.gamma);
   }
 
   bellmanStepSize(features, action, nextFeatures, rewards, alpha, gamma){
@@ -65,15 +157,13 @@ class QRegression {
   stepSize(features, action, nextFeatures, nextAction, rewards, alpha, gamma){
     var Qsa = this.get(features, action);
     var QsPrimeAPrime = this.get(nextFeatures, nextAction);
+
     var f1 = rewards + (gamma * QsPrimeAPrime);
     var f0 = Qsa
 
     var h = alpha * (f1 - f0);
-    return parseFloat(h.toFixed(3));
-  }
-
-  transformState(state){
-
+    // return h;
+    return parseFloat(h.toFixed(5));
   }
 
   actionIndex(action){
@@ -100,7 +190,7 @@ class QRegression {
     // will be replaced and moved to Matrix when
     // we can cast arrays as matrices
 
-    return this.weights.numRows != features.length
+    return this.weights.numColumns != features.length
   }
 
   argMaxValueAndActionFor(features){
@@ -128,14 +218,10 @@ class QRegression {
 
     return this.actions[actionIndex];
   }
+
+  getCurrentState(){
+    return this.interpreter.interpreteState(this.environment.observables());
+  }
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = QRegression;
-  }
-  exports.QRegression = QRegression;
-}
-else {
-  this.QRegression = QRegression;
-}
+module.exports = QRegression

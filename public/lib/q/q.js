@@ -1,24 +1,20 @@
-var has_require = typeof require !== 'undefined'
-
-if( typeof Matrix === 'undefined' ) {
-  if( has_require ) {
-    Matrix = require('../q/matrix')
-  }
-  else throw new Error('q requires matrix');
-}
-
+Matrix = require('../q/matrix');
+StateInterpreter = require('../q/state_interpreter');
 
 class Q {
-  constructor(states, actions) {
+  constructor(states, actions, table = new Matrix(states.length, actions.length), interpreter = new StateInterpreter('string-concat')) {
     this.states = states
     this.actions = actions
-    this.table = new Matrix(this.states.length, this.actions.length);
-    this.isPublishing = false;
-    this.messenger;
-    this.tablePublishCount = 0;
-    this.nextSetCountMark = 5000;
-    this.setCountInterval = 5000;
-    this.setCount = 0;
+    this.table = table; // replace with a set table method that checks if table matches dimensions
+    this.alpha;
+    this.gamma;
+    this.epilson;
+    this.interpreter = interpreter;
+    this.environment;
+  }
+
+  setEnvironment(environment){
+    this.environment = environment;
   }
 
   static fromHash(hash){
@@ -41,9 +37,20 @@ class Q {
     return q;
   }
 
-  setMessenger(messenger){
-    this.messenger = messenger
-  };
+  learn(oldState, action, reward, newState){
+    var Qsa = this.get(oldState, action)
+    var bestAction = this.bestAction(newState)
+    var QPrimeSa = this.get(newState, bestAction)
+    var newQsa = (Qsa * (1 - this.alpha)) + this.alpha * (reward + this.gamma * QPrimeSa)
+
+    this.set(oldState, action, newQsa)
+  }
+
+  setLearningParameters(alpha, gamma, epilson){
+    this.alpha = alpha;
+    this.gamma = gamma;
+    this.epilson = epilson;
+  }
 
   get(state, action){
     this.preventInexistentStatesOrActions(state, action)
@@ -53,41 +60,6 @@ class Q {
   set(state, action, value){
     this.preventInexistentStatesOrActions(state, action);
     this.tableSet(state, action, value);
-    this.publishTableOnIntervalExceeded();
-    this.updateSetCount();
-  }
-
-  updateTablePublishCount(){
-    this.tablePublishCount += 1;
-  }
-
-  updateSetCount(){
-    this.setCount += 1;
-  }
-
-  publishTableOnIntervalExceeded(){
-    if (this.setCount >= this.nextSetCountMark) {
-      console.log('PUBLISSSSSSSSSH');
-      this.publishTable();
-      this.nextSetCountMark += this.setCountInterval;
-    }
-  }
-
-  publishTable(){
-    if (this.isPublishing) {
-      var data = this.toHash();
-      data.id = this.tableID();
-      this.messenger.send('insert', data);
-      this.updateTablePublishCount();
-    };
-  }
-
-  tableID(){
-    new Date().getTime() + '_' + this.tablePublishCount
-  }
-
-  startPublishing(){
-    this.isPublishing = true;
   }
 
   tableGet(state, action){
@@ -132,7 +104,11 @@ class Q {
     }
   }
 
-  argMax(state){
+  getCurrentState(){
+    return this.interpreter.interpreteState(this.environment.observables());
+  }
+
+  bestAction(state){
     var maxAction = this.actions[0];
     var that = this;
     this.actions.forEach(function (action) {
@@ -174,12 +150,4 @@ class Q {
   }
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Q;
-  }
-  exports.Q = Q;
-}
-else {
-  this.Q = Q;
-}
+module.exports = Q

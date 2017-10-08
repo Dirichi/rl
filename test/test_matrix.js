@@ -7,7 +7,13 @@ describe('Matrix', function () {
       var testMatrix = new Matrix(2, 2)
 
       expect(testMatrix.body).to.be.an('array').that.is.not.empty;
-    })
+    });
+
+    it('sets the body of the matrix to a provided body', function () {
+      var testMatrix = new Matrix(2, 2, [[1,1], [1,1]]);
+
+      expect(testMatrix.body).to.eql([[1,1],[1,1]]);
+    });
   })
 
   describe('zeroes', function () {
@@ -20,11 +26,8 @@ describe('Matrix', function () {
 
   describe('product', function () {
     it('returns a product of two matrices', function (){
-      var matrixA = new Matrix(2, 2)
-      matrixA.setBody([[1, 2],[3, 4]])
-      var matrixB = new Matrix(2,2)
-      matrixB.setBody([[3, 1],[1, 2]])
-
+      var matrixA = new Matrix(2, 2, [[1, 2],[3, 4]])
+      var matrixB = new Matrix(2,2, [[3, 1],[1, 2]])
       var product = Matrix.product(matrixA, matrixB);
 
       expect(product.body).to.eql([[5, 5], [13, 11]]);

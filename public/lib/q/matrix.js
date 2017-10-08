@@ -1,9 +1,9 @@
 class Matrix{
-  constructor(numRows, numColumns){
+  constructor(numRows, numColumns, body = Matrix.random(numRows, numColumns)){
     this.numRows = numRows;
     this.numColumns = numColumns;
     this.body = [];
-    this.setBody(Matrix.random(numRows, numColumns));
+    this.setBody(body);
   };
 
   static zeroes(numRows, numColumns){
@@ -68,8 +68,36 @@ class Matrix{
     }
   }
 
+  scalarProduct(scalar) {
+    var resultArray = [];
+    this.body.forEach(function (row) {
+      var newRow = row.map((val) => val * scalar)
+      resultArray.push(newRow);
+    });
+    return new Matrix(this.numRows, this.numColumns, resultArray);
+  }
+
   dimensions(){
     return [this.numRows, this.numColumns]
+  }
+
+  roundedBody(val){ //perhaps this method should be given to arrays
+    var result = []
+    this.body.forEach(function (row) {
+      var rowArray = [];
+      row.forEach((e) => rowArray.push(Math.round(e * Math.pow(10, val)) / Math.pow(10, val)));
+      result.push(rowArray)
+    });
+    return result;
+  }
+
+  toString(){
+    var string = '';
+    this.body.forEach(function (row) {
+      string += row.map((e) => e.toFixed(4)).join(' , ');
+      string += '\n'
+    });
+    return string;
   }
 
   row(index){
@@ -121,6 +149,11 @@ class Matrix{
     this.body[rowIndex][columnIndex] = value
   };
 
+  setRow(rowIndex, value){
+    // need to do some checking here
+    this.body[rowIndex] = value;
+  };
+
   preventOutOfRange(rowIndex, columnIndex){
     if (this.indexOutOfRange(rowIndex, columnIndex)) {
       throw new Error('provided index is out of range of matrix dimensions');
@@ -141,16 +174,6 @@ class Matrix{
     }
     return nestedSum;
   }
-
-
 }
 
-if( typeof exports !== 'undefined' ) {
-  if( typeof module !== 'undefined' && module.exports ) {
-    exports = module.exports = Matrix;
-  }
-  exports.Matrix = Matrix;
-}
-else {
-  this.Matrix = Matrix;
-}
+module.exports = Matrix
