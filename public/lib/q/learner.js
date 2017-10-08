@@ -6,6 +6,7 @@ class Learner {
     this.epilson = epilson //exploration rate
     this.agent = agent;
     this.episodes = [];
+    this.rewards = 0;
     this.setState(this.getCurrentState());
     this.setLearningParameters();
   }
@@ -54,7 +55,9 @@ class Learner {
   }
 
   getReward(){
-    return this.agent.getReward();
+    var currentReward = this.rewards;
+    this.rewards = 0;
+    return currentReward;
   }
 
   decayEpilson(){

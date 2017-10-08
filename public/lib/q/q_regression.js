@@ -2,7 +2,8 @@ Matrix = require('../q/matrix');
 StateInterpreter = require('../q/state_interpreter');
 
 class QRegression {
-  constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures), interpreter = new StateInterpreter('array-of-features')) {
+  constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures),
+  interpreter = new StateInterpreter('array-of-features')) {
     this.numFeatures = numFeatures
     this.actions = actions;
     this.weights = weights; // add a set weights method
@@ -49,21 +50,18 @@ class QRegression {
     //requires refactoring
     this.storeExperience(features, action, rewards, nextFeatures);
 
-    if (this.experience.length >= this.batchSize) {
+    if (this.canUpdateWeights()) {
       var newWeightValuesHash = {}
-
       for (var i = 0; i < this.batchSize; i++) {
         this.collectWeightValuesIntoHash(newWeightValuesHash)
       }
-      var that = this;
-
-      Object.keys(newWeightValuesHash).forEach(function (actionIndex) {
-        var summedWeightValues = newWeightValuesHash[actionIndex].val
-        var average = summedWeightValues.map((v) => v / newWeightValuesHash[actionIndex].count)
-        that.updateWeights(actionIndex, average);
-      });
+      this.updateWeightsWithHash(newWeightValuesHash)
     }
   };
+
+  canUpdateWeights(){
+    return this.experience.length >= this.batchSize
+  }
 
   collectWeightValuesIntoHash(newWeightValuesHash){
     var transition = this.sampleFromExperience();
@@ -81,6 +79,16 @@ class QRegression {
       newWeightValuesHash[rowIndex].val = newWeightValues
       newWeightValuesHash[rowIndex].count = 1
     }
+  }
+
+  updateWeightsWithHash(newWeightValuesHash){
+    var that = this;
+
+    Object.keys(newWeightValuesHash).forEach(function (actionIndex) {
+      var summedWeightValues = newWeightValuesHash[actionIndex].val;
+      var average = summedWeightValues.map((v) => v / newWeightValuesHash[actionIndex].count);
+      that.updateWeights(actionIndex, average);
+    });
   }
 
   storeExperience(features, action, rewards, nextFeatures){

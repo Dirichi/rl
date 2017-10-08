@@ -1,52 +1,45 @@
-//todo; only update rewards if rewards is not 0
-var socket = io();
 var paddleA, paddleAI;
 var gameBoundary;
 var ball;
-var q, brain;
+var q, brain, q2, brain2;
 var possibleStates = [];
-var rewards = 0;
 var Ascore = 0;
 var AIscore = 0;
-var socketReady = false;
-var messenger;
+var rewardAssigner;
+var NUM_FEATURES = 5;
 
-var has_require = typeof require !== 'undefined'
-
-if( typeof Paddle === 'undefined' ) {
-  if( has_require ) {
-    Paddle = require('../lib/paddle')
-  }
-  else throw new Error('game requires paddle');
+ function setup() {
+  createCanvas(windowWidth,windowHeight);
+  initGame();
+  // q = new Q(possibleStates, paddleAI.actions);
+  q = new QRegression(NUM_FEATURES, ['up', 'down']);
+  q.setEnvironment(this);
+  q2 = new QRegression(NUM_FEATURES, ['up', 'down']);
+  q2.setEnvironment(this);
+  brain = new Learner(q, 0.1, 0.9, 0.8, paddleAI);
+  brain2 = new Learner(q2, 0.05, 0.9, 0.8, paddleA);
+  rewardAssigner = new RewardAssigner(this);
 }
 
+ function draw(){
+  animateGame();
+  manageScores();
+  manageLearning();
+  restartWhenBallOutOfBounds();
+}
 
-function setup() {
-  createCanvas(windowWidth,windowHeight);
+function initGame(){
   paddleA = new Paddle(30, windowHeight/2 - 50, 10, 100, 10);
   paddleAI = new Paddle(windowWidth - 30, windowHeight/2 - 50, 10, 100, 10);
   gameBoundary = new Boundary([0, windowWidth], [0, windowHeight]);
-  ball = new Ball(windowWidth/2, windowHeight/2, 10, 5);
+  ball = new Ball(windowWidth/2, windowHeight/2, 10, 10);
 
   paddleA.setBoundary(gameBoundary);
   paddleAI.setBoundary(gameBoundary);
   ball.setBoundary(gameBoundary);
   ball.addToCollidables(paddleA);
   ball.addToCollidables(paddleAI);
-  setupPossibleStatesForAI();
-  paddleAI.setEnvironment(this);
-
-  q = new Q(possibleStates, paddleAI.actions);
-  brain = new Learner(q, 0.2, 0.9, 0.8, paddleAI);
-  brain.q.setMessenger(messenger);
-  brain.q.startPublishing();
-}
-
-function draw(){
-  animateGame();
-  manageScores();
-  restartWhenBallOutOfBounds();
-  manageLearning();
+  // setupPossibleStatesForAI();
 }
 
 function animateGame() {
@@ -65,56 +58,47 @@ function manageScores() {
 function manageLearning() {
   administerRewards();
   brain.learn();
-  resetRewards();
+  // brain2.learn();
 }
 
-function getStateForAI(){
-  var aiRegion = paddleAI.yRegion();
-  var aRegion = paddleA.yRegion();
-  var ballRegion = ball.yRegion();
-  var ballxDirection = ball.xDirection
-  var ballyDirection = ball.yDirection
+function observables(){
+  var aiPos = paddleAI.ypos / windowHeight;
+  var aPos = paddleA.ypos / windowHeight;
+  var ballPos = ball.ypos / windowHeight;
+  var ballxDirection = (ball.xDirection + 1) / 2;
+  var ballyDirection = (ball.yDirection + 1) / 2;
 
-  var state = ''+ aiRegion + aRegion + ballRegion + ballxDirection + ballyDirection;
-  return state
+  return [ballxDirection ,ballyDirection, ballPos, aiPos, aPos]
+  // return [ballyDirection, ballPos, aiPos]
+
+  // var aiRegion = paddleAI.yRegion();
+  // var aRegion = paddleA.yRegion();
+  // var ballRegion = ball.yRegion();
+  // var ballxDirection = ball.xDirection
+  // var ballyDirection = ball.yDirection
+  //
+  // return [aiRegion, aRegion, ballRegion, ballxDirection, ballyDirection]
 }
 
-function getRewardsForAI(){
-  return rewards;
-}
+function rewardEvents() {
+  return [
+    { target: brain, active: paddleAI.contains(ball), reward: 2 },
 
-function resetRewards(){
-  rewards = 0;
+    { target: brain, active: ball.beyondRightMostXBounds(), reward: -5 },
+
+    { target: brain, active: ball.beyondLeftMostXBounds(), reward: 5 },
+
+
+    // { target: brain2, active: paddleA.contains(ball), reward: 2 },
+    //
+    // { target: brain2, active: ball.beyondLeftMostXBounds(), reward: -5 },
+    //
+    // { target: brain2, active: ball.beyondRightMostXBounds(), reward: 5 }
+  ]
 }
 
 function administerRewards(){
-  incrementRewardsOnBallHit();
-  incrementRewardsOnBallPastOpposition();
-  decrementRewardsOnBallPastAiXBounds();
-}
-
-//questionable
-function incrementRewardsOnBallHit(){
-  if (paddleAI.contains(ball)) {
-    updateRewards(2);
-  }
-}
-
-function decrementRewardsOnBallPast(){
-  if (paddleAI.xpos < ball.xpos) {
-    updateRewards(-5);
-  }
-}
-
-function incrementRewardsOnBallPastOpposition() {
-  if (paddleA.xpos > ball.xpos) {
-    updateRewards(5);
-  }
-}
-
-
-function updateRewards(value){
-  rewards += value;
+  rewardAssigner.assignRewards();
 }
 
 function animateScores(){
@@ -141,13 +125,8 @@ function updateScoresOnBallOutOfXBounds(){
   }
 }
 
-function decrementRewardsOnBallPastAiXBounds(){
-  if (ball.beyondRightMostXBounds()) {
-    updateRewards(-5)
-  }
-}
-
 function setupPossibleStatesForAI(){
+  // this method is only used by Q objects, so need to move it out of the game
   var aiRegionPossibleStates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   var aRegionPossibleStates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   var ballRegionPossibleStates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
