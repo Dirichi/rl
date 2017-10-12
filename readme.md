@@ -28,7 +28,7 @@ Currently there is only a pong game using QRegression. To test it out run
 and then visit `localhost:3000` in a (preferrably chrome) browser
 
 # RL IN ACTION
-[reinforcement learning with pong](https://vimeo.com/236285279)
+![reinforcement learning with pong](https://vimeo.com/236285279)
 
 # Recommended reading
 I'm also doing some writing about reinforcement learning on my medium blog. Check out the first story in the series at https://medium.com/@yung_API/i-just-taught-some-pixels-on-my-screen-how-to-play-pong-6f5b50cc25ad
