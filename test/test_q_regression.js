@@ -134,8 +134,9 @@ describe('QRegression', function () {
     it('returns the difference between Q(s,a) and (r + y * Q(s`, a`))', function () {
       testQRegression = new QRegression(2, ['up', 'down']);
       testQRegression.weights.setBody([[1, 0],[2, 1]])
+      stepSize = testQRegression.bellmanStepSize([0.5, 0.8], 'up', [0.3, 0.6], 3, 0.2, 0.8);
 
-      expect(testQRegression.bellmanStepSize([0.5, 0.8], 'up', [0.3, 0.6], 3, 0.2, 0.8)).to.eql(0.692);
+      expect(parseFloat(stepSize.toFixed(3))).to.eql(0.692);
       // Q(s, a) = 0.5
       // Q(s`, a`) = 1.2
       // r = 3

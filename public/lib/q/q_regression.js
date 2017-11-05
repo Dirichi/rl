@@ -162,8 +162,7 @@ class QRegression {
     var f0 = Qsa
 
     var h = alpha * (f1 - f0);
-    // return h;
-    return parseFloat(h.toFixed(5));
+    return h;
   }
 
   actionIndex(action){
