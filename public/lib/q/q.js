@@ -1,15 +1,23 @@
 Matrix = require('../q/matrix');
 StateInterpreter = require('../q/state_interpreter');
+_ = require('underscore');
 
 class Q {
-  constructor(states, actions, table = new Matrix(states.length, actions.length), interpreter = new StateInterpreter('string-concat')) {
-    this.states = states
-    this.actions = actions
-    this.table = table; // replace with a set table method that checks if table matches dimensions
+  static defaults(states, actions){
+    var statesSize = states.length;
+    var actionsSize = actions.length;
+    return { table: new Matrix(statesSize, actionsSize), interpreter: new StateInterpreter('string-concat') }
+  }
+
+  constructor(args){
+    var newArgs = _.extend(Q.defaults(args.states, args.actions), args);
+    this.states = newArgs.states
+    this.actions = newArgs.actions
+    this.table = newArgs.table; // replace with a set table method that checks if table matches dimensions
     this.alpha;
     this.gamma;
     this.epilson;
-    this.interpreter = interpreter;
+    this.interpreter = newArgs.interpreter;
     this.environment;
   }
 
@@ -22,7 +30,8 @@ class Q {
 
     //assumes that first state hash has all actions
     var actions = Object.keys(hash[states[0]]);
-    var q = new Q(states, actions);
+    var initHash = { states: states, actions: actions }
+    var q = new Q(initHash);
     var tableBody = [];
 
     states.forEach(function (state) {

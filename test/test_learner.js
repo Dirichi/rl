@@ -7,7 +7,7 @@ var Q = require("../public/lib/q/q");
 describe('Learner', function () {
   describe('constructor', function () {
     it('initializes the learner state', function () {
-      testQ = new Q(['a'], [1]);
+      testQ = new Q({ states: ['a'], actions: [1]});
       sinon.stub(Learner.prototype, 'getCurrentState').returns('a')
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
 
@@ -18,7 +18,7 @@ describe('Learner', function () {
 
   describe('setState', function () {
     it('sets learner state', function () {
-      testQ = new Q(['a', 'b'], [1]);
+      testQ = new Q({ states: ['a', 'b'], actions: [1] });
       sinon.stub(Learner.prototype, 'getCurrentState').returns('a')
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
 
@@ -30,7 +30,7 @@ describe('Learner', function () {
 
   describe('selectBestAction', function () {
     it('returns bestAction at the current state', function () {
-      testQ = new Q(['a', 'b'], [1, 2]);
+      testQ = new Q({ states: ['a', 'b'], actions: [1, 2]});
       sinon.stub(Learner.prototype, 'getCurrentState').returns('a');
       testLearner = new Learner(testQ, 0.2, 0.9, 0.5, {});
       testQ.set('a', 2, 10)
@@ -42,7 +42,7 @@ describe('Learner', function () {
 
   describe('learn', function () {
     it('selects and has the agent perform an action', function () {
-      testQ = new Q(['a', 'b'], [1, 2]);
+      testQ = new Q({ states: ['a', 'b'], actions: [1, 2] });
       testQ.set('a', 2, 10);
       sinon.stub(Learner.prototype, 'getCurrentState').returns('a');
       sinon.stub(Learner.prototype, 'selectAction').returns(2);
@@ -63,7 +63,7 @@ describe('Learner', function () {
     });
 
     it('sets Q(currentState, currentAction) using q learning method',function () {
-      testQ = new Q(['a', 'b'], [1, 2]);
+      testQ = new Q({ states: ['a', 'b'], actions: [1, 2] });
       testQ.set('b', 1, 10);
       testQ.set('a', 2, 10);
 
@@ -91,7 +91,7 @@ describe('Learner', function () {
     });
 
     it('updates its state', function () {
-      testQ = new Q(['a', 'b'], [1, 2]);
+      testQ = new Q({ states: ['a', 'b'], actions: [1, 2] });
       testQ.set('b', 1, 10);
       testQ.set('a', 2, 10);
 
