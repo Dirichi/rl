@@ -8,13 +8,13 @@ describe('QRegression', function () {
   describe('constructor', function () {
     it('assigns provided weights', function () {
       var testMatrix = new Matrix(3, 2, [[0,1],[2,3],[4,5]]);
-      testQRegression = new QRegression(2,['left', 'right', 'up'], testMatrix);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['left', 'right', 'up'], weights: testMatrix });
 
       expect(testQRegression.weights.body).to.eql([[0,1],[2,3],[4,5]]);;
     })
 
     it('creates random weights if no weights are provided', function () {
-      testQRegression = new QRegression(2,['left', 'right', 'up']);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['left', 'right', 'up'] });
 
       expect(testQRegression.weights.numRows).to.eql(3);
       expect(testQRegression.weights.numColumns).to.eql(2);
@@ -23,7 +23,7 @@ describe('QRegression', function () {
 
   describe('get', function () {
     it('returns a Q value for the provided feature values and actions as a linear function of weights', function () {
-      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['up', 'down'] });
       testQRegression.weights.setBody([[1, 0],[2, 1]])
 
       expect(testQRegression.get([0.5, 0.8], 'down')).to.eql(1.8);
@@ -32,7 +32,7 @@ describe('QRegression', function () {
 
   describe('setLearningParameters', function () {
     it('sets alpha, gamma and epilson', function () {
-      testQRegression = new QRegression(2,[1, 2]);
+      testQRegression = new QRegression({ numFeatures: 2, actions: [1, 2] });
 
       testQRegression.setLearningParameters(0.2, 0.8, 0.9);
       expect(testQRegression.alpha).to.eql(0.2)
@@ -43,7 +43,7 @@ describe('QRegression', function () {
 
   describe('learn', function () {
     it('updates the weights of Q', function () {
-      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['up', 'down'] });
       testQRegression.weights.setBody([[1, 0],[2, 1]])
       testQRegression.setLearningParameters(0.2, 0.8, 0.9);
 
@@ -59,7 +59,7 @@ describe('QRegression', function () {
     });
 
     it('does not update weights if the size of the experience buffer < batchSize', function () {
-      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['up', 'down'] });
       testQRegression.weights.setBody([[1, 0],[2, 1]])
       testQRegression.setLearningParameters(0.2, 0.8, 0.9);
       testQRegression.setBatchSize(2);
@@ -69,7 +69,7 @@ describe('QRegression', function () {
     });
 
     it('correctly handles weight updates for batchsizes greater than 1', function () {
-      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['up', 'down'] });
       testQRegression.weights.setBody([[1, 0],[2, 1]])
       testQRegression.setLearningParameters(0.2, 0.8, 0.9);
       testQRegression.setBatchSize(2);
@@ -132,7 +132,7 @@ describe('QRegression', function () {
 
   describe('bellmanStepSize', function () {
     it('returns the difference between Q(s,a) and (r + y * Q(s`, a`))', function () {
-      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['up', 'down'] });
       testQRegression.weights.setBody([[1, 0],[2, 1]])
       stepSize = testQRegression.bellmanStepSize([0.5, 0.8], 'up', [0.3, 0.6], 3, 0.2, 0.8);
 
@@ -156,14 +156,14 @@ describe('QRegression', function () {
 
   describe('argMaxValueAndActionFor', function () {
     it('returns the action arguments for the maxima on Q for a given set of features', function () {
-      testQRegression = new QRegression(2, ['up', 'down']);
+      testQRegression = new QRegression({ numFeatures: 2, actions: ['up', 'down'] });
       testQRegression.weights.setBody([[1, 0],[2, 1]])
 
       expect(testQRegression.argMaxValueAndActionFor([0.5, 0.8])).to.eql([1.8, 'down']);
     });
 
     it('throws an error if the provided features don\'t match the dimensions of the weight', function () {
-      testQRegression = new QRegression(5, ['up', 'down']);
+      testQRegression = new QRegression({ numFeatures: 5, actions: ['up', 'down'] });
 
       expect(testQRegression.argMaxValueAndActionFor.bind(testQRegression, [0.5, 0.8])).to.throw('provided features different in dimension from Q instance weights');
     })
@@ -172,7 +172,7 @@ describe('QRegression', function () {
   describe('getCurrentState', function () {
     it('returns the state of the environment', function () {
       environment = { observables: function () { return [10] } }
-      testQRegression = new QRegression(5, [1, 2]);
+      testQRegression = new QRegression({ numFeatures: 5, actions: [1, 2] });
       testQRegression.setEnvironment(environment);
 
       expect(testQRegression.getCurrentState()).to.eql([10]);

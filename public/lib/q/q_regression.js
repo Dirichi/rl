@@ -1,16 +1,28 @@
 Matrix = require('../q/matrix');
 StateInterpreter = require('../q/state_interpreter');
+_ = require('underscore');
 
 class QRegression {
-  constructor(numFeatures, actions, weights = new Matrix(actions.length, numFeatures),
-  interpreter = new StateInterpreter('array-of-features')) {
-    this.numFeatures = numFeatures
-    this.actions = actions;
-    this.weights = weights; // add a set weights method
+  static defaults(numFeatures, actions){
+    var actionsSize = actions.length;
+
+    return {
+      weights: new Matrix(actionsSize, numFeatures),
+      interpreter: new StateInterpreter('array-of-features'),
+      experienceSize: 1000,
+      batchSize: 1
+     }
+  }
+
+  constructor(args) {
+    var newArgs = _.extend(QRegression.defaults(args.numFeatures, args.actions), args)
+    this.numFeatures = newArgs.numFeatures;
+    this.actions = newArgs.actions;
+    this.weights = newArgs.weights; // add a set weights method
     this.experience = [];
-    this.experienceSize = 100;
-    this.batchSize = 1;
-    this.interpreter = interpreter;
+    this.experienceSize = newArgs.experienceSize;
+    this.batchSize = newArgs.batchSize;
+    this.interpreter = newArgs.interpreter;
   }
 
   setEnvironment(environment){

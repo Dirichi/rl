@@ -12,7 +12,7 @@ var NUM_FEATURES = 5;
   createCanvas(windowWidth,windowHeight);
   initGame();
   // q = new Q(possibleStates, paddleAI.actions);
-  q = new QRegression(NUM_FEATURES, ['up', 'down']);
+  q = new QRegression({ numFeatures: NUM_FEATURES, actions: ['up', 'down'] });
   q.setEnvironment(this);
   q.setBatchSize(10);
   q2 = new QRegression(NUM_FEATURES, ['up', 'down']);
