@@ -6,14 +6,16 @@ var StateInterpreter = require("../public/lib/q/state_interpreter");
 describe('Q', function () {
   describe('constructor', function () {
     it('creates a table for each instance of Q', function () {
-      var testMatrix = new Matrix(2, 2, [[1,1],[1,1]]);
-      testQ = new Q(['a','b'],[1,2,3], testMatrix);
+      testMatrix = new Matrix(2, 2, [[1,1],[1,1]]);
+      initValues = { states: ['a', 'b'], actions: [1, 2, 3],  table: testMatrix }
+      testQ = new Q(initValues);
 
       expect(testQ.table.body).to.eql([[1,1],[1,1]]);
     })
 
     it('creates a random table if no table is provided', function () {
-      testQ = new Q(['a','b'],[1,2,3]);
+      initValues = { states: ['a', 'b'], actions: [1, 2, 3] }
+      testQ = new Q(initValues);
 
       expect(testQ.table.numRows).to.eql(2);
       expect(testQ.table.numColumns).to.eql(3);
@@ -22,7 +24,8 @@ describe('Q', function () {
 
   describe('setLearningParameters', function () {
     it('sets alpha, gamma and epilson', function () {
-      testQ = new Q(['a', 'b'],[1, 2]);
+      initValues = { states: ['a', 'b'], actions: [1, 2] }
+      testQ = new Q(initValues);
 
       testQ.setLearningParameters(0.2, 0.8, 0.9);
       expect(testQ.alpha).to.eql(0.2)
@@ -33,8 +36,10 @@ describe('Q', function () {
 
   describe('learn', function () {
     it('returns the value at the provided state and action pair', function () {
-      var testMatrix = new Matrix(2, 2, [[1,3],[1,3]]);
-      testQ = new Q(['a', 'b'],[1, 2], testMatrix);
+      testMatrix = new Matrix(2, 2, [[1,3],[1,3]]);
+      initValues = { states: ['a', 'b'], actions: [1, 2], table: testMatrix }
+
+      testQ = new Q(initValues);
       testQ.setLearningParameters(0.2, 0.8, 0.9);
 
       testQ.learn('a', 1, 5, 'b')
@@ -47,19 +52,22 @@ describe('Q', function () {
 
   describe('get', function () {
     it('returns the value at the provided state and action pair', function () {
-      testQ = new Q(['a', 'b'],[1, 2]);
+      initValues = { states: ['a', 'b'], actions: [1, 2] }
+      testQ = new Q(initValues);
 
       expect(testQ.get('a', 2)).to.equal(testQ.table.body[0][1]);
     });
 
     it('throws an error if the provided state does not exist', function () {
-      testQ = new Q(['a', 'b'],[1, 2]);
+      initValues = { states: ['a', 'b'], actions: [1, 2] };
+      testQ = new Q(initValues);
 
       expect(testQ.get.bind(testQ, 'd', 2)).to.throw('Q instance does not have provided state d');
     });
 
     it('throws an error if the provided action does not exist', function () {
-      testQ = new Q(['a','b'],[1, 2])
+      initValues = { states: ['a', 'b'], actions: [1, 2] };
+      testQ = new Q(initValues)
 
       expect(testQ.get.bind(testQ, 'a', 3)).to.throw('Q instance does not have provided action 3');
     })
@@ -67,20 +75,23 @@ describe('Q', function () {
 
   describe('set', function () {
     it('sets the value at the provided state and action pair', function () {
-      testQ = new Q(['a', 'b'], [1, 2])
+      initValues = { states: ['a', 'b'], actions: [1, 2] };
+      testQ = new Q(initValues);
       testQ.set('a', 1, 10);
 
       expect(testQ.get('a', 1)).to.equal(10);
     });
 
     it('throws an error if the provided state does not exist', function () {
-      testQ = new Q(['a'], [1, 2])
+      initValues = { states: ['a'], actions: [1, 2] };
+      testQ = new Q(initValues)
 
       expect(testQ.set.bind(testQ, 'b', 1, 10)).to.throw('Q instance does not have provided state b')
     });
 
     it('throws an error if the provided action does not exist', function () {
-      testQ = new Q(['a', 'b'], [1]);
+      initValues = { states: ['a', 'b'], actions: [1] };
+      testQ = new Q(initValues);
 
       expect(testQ.set.bind(testQ, 'b', 2, 10)).to.throw('Q instance does not have provided action 2');
     })
@@ -88,14 +99,16 @@ describe('Q', function () {
 
   describe('bestAction', function () {
     it('returns the action arguments for the maxima on Q for a given state', function () {
-      testQ = new Q(['a', 'b'], [1, 2]);
+      initValues = { states: ['a', 'b'], actions: [1, 2] }
+      testQ = new Q(initValues);
       testQ.set('a', 2, 1);
 
       expect(testQ.bestAction('a')).to.equal(2);
     });
 
     it('throws an error if the provided state does not exist', function () {
-      testQ = new Q(['a'], [1, 2]);
+      initValues = { states: ['a'], actions: [1, 2] }
+      testQ = new Q(initValues);
 
       expect(testQ.bestAction.bind(testQ, 'b')).to.throw('Q instance does not have provided state b');
     })
@@ -103,7 +116,8 @@ describe('Q', function () {
 
   describe('toHash', function () {
     it('returns its table as a hash', function () {
-      testQ = new Q(['a', 'b'], [1,2]);
+      initValues = { states: ['a', 'b'], actions: [1, 2] }
+      testQ = new Q(initValues);
       testQ.table.setBody([[5,7],[6,3]]);
       expect(testQ.toHash()).to.eql({ a: { 1: 5, 2: 7 }, b: { 1: 6, 2: 3 } })
     })
@@ -122,8 +136,9 @@ describe('Q', function () {
 
   describe('getCurrentState', function () {
     it('returns the state of the environment', function () {
-      environment = { observables: function () { return [10, 5] } }
-      testQ = new Q(['a', 'b'], [1, 2]);
+      environment = { observables: function () { return [10, 5] } };
+      initValues = { states: ['a', 'b'], actions: [1, 2] }
+      testQ = new Q(initValues);
       testQ.setEnvironment(environment);
 
       expect(testQ.getCurrentState()).to.eql('105');
